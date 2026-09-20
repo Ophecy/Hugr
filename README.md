@@ -9,8 +9,19 @@ gameplay content. See `Hugr_Specifications_Fonctionnelles.md` and
 
 ## Status
 
-V0 — bootstrap. The plugin loads, the menu opens and the settings persist. The feature
-toggles do not drive any gameplay yet.
+V1 — repair. The plugin loads, its tab lives in the vanilla settings panel, and both repair
+features are in. The recipe toggles are still placeholders: they land with V2.
+
+## Features
+
+| Setting | What it does |
+| --- | --- |
+| Automatic repair | Repairs every item the station accepts as soon as the crafting panel opens. |
+| Repair everything at once | One press of the vanilla repair button repairs the whole pile. |
+
+Both call Valheim's own repair routine, so the station rules, the skill gain, the effects and
+the messages are the vanilla ones — only the number of clicks changes. A feature you turn off
+has no patch installed on the game at all.
 
 ## Build
 
@@ -40,15 +51,19 @@ next to the vanilla ones. **OK** saves, **Back** discards, exactly like the othe
 
 Settings are stored in `BepInEx/config/com.ophecy.hugr.cfg` and can also be edited there.
 
-## Verifying V0
+## Verifying V1
 
 1. Launch Valheim, check the BepInEx log for `Hugr loaded.` then `Settings tab injected.`
 2. Open Settings — a Hugr tab sits next to the vanilla ones, in the game's own style.
 3. Flip the toggles, press OK, reopen — values hold. Flip them, press Back — values revert.
 4. Quit, relaunch, reopen the tab — values still hold.
-5. Join a vanilla server with no Hugr installed — the tab still works.
+5. Damage a few pieces of gear, open a workbench — everything is repaired, the log says how many.
+6. Turn **Automatic repair** off, damage gear again, open the workbench — nothing is repaired;
+   one press of the repair button fixes the whole pile.
+7. Join a vanilla server with no Hugr installed — repeat step 5, it still works.
 
-If the tab is missing, the log carries a `HUGR-UI-0xx` code naming the step that failed.
+If the tab is missing, the log carries a `HUGR-UI-0xx` code naming the step that failed; a
+repair that refuses to run logs a `HUGR-REPAIR-0xx` or `HUGR-PATCH-0xx` code the same way.
 
 ## License
 
