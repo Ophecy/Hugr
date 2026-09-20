@@ -8,8 +8,9 @@ using Hugr.Configuration;
 namespace Hugr.Features.Recipes
 {
     /// <summary>
-    /// Pins the recipe selected in the crafting panel, on a key press. The pin itself is a config
-    /// entry, so it survives the session like any other setting.
+    /// Pins the recipe selected in the crafting panel, on a key press, and keeps the on-screen
+    /// tracker attached to the HUD. The pin itself is a config entry, so it survives the session
+    /// like any other setting.
     /// Execution: client. Persistence: client (BepInEx config). Server interaction: none — the
     /// recipe list and the inventory are already on the client.
     /// </summary>
@@ -40,6 +41,8 @@ namespace Hugr.Features.Recipes
 
         private static void OnUpdate(InventoryGui __instance)
         {
+            RecipeTrackerHud.Ensure();
+
             if (!InventoryGui.IsVisible() || !ModConfig.PinRecipeKey.Value.IsDown())
             {
                 return;
