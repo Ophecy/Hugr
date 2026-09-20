@@ -1,7 +1,7 @@
 // Copyright (C) 2026 Ophecy
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-using System;
+using System.Reflection;
 using HarmonyLib;
 using Hugr.Configuration;
 
@@ -16,21 +16,20 @@ namespace Hugr.Features.Recipes
     /// </summary>
     internal static class RecipePinning
     {
-        private static AccessTools.FieldRef<InventoryGui, InventoryGui.RecipeDataPair> _selectedRecipe;
+        // InventoryGui.m_selectedRecipe is a private nested struct, so it has no name C# can
+        // spell: it is read through its own Recipe property instead, once per key press.
+        private static FieldInfo _selectedRecipe;
+        private static PropertyInfo _recipeOfPair;
 
         internal static void Bind(Harmony harmony)
         {
-            try
-            {
-                _selectedRecipe =
-                    AccessTools.FieldRefAccess<InventoryGui, InventoryGui.RecipeDataPair>("m_selectedRecipe");
-            }
-            catch (Exception exception)
-            {
-                throw new HugrException(
-                    "HUGR-RECIPE-001",
-                    "InventoryGui.m_selectedRecipe is not reachable (" + exception.Message + ").");
-            }
+            _selectedRecipe = AccessTools.Field(typeof(InventoryGui), "m_selectedRecipe")
+                ?? throw new HugrException(
+                    "HUGR-RECIPE-001", "InventoryGui no longer exposes the selected recipe.");
+
+            _recipeOfPair = AccessTools.Property(_selectedRecipe.FieldType, "Recipe")
+                ?? throw new HugrException(
+                    "HUGR-RECIPE-005", "The selected recipe no longer carries a Recipe.");
 
             FeatureSwitch.Bind(
                 harmony,
@@ -48,8 +47,8 @@ namespace Hugr.Features.Recipes
                 return;
             }
 
-            Recipe recipe = _selectedRecipe(__instance).Recipe;
-            if (recipe == null || Player.m_localPlayer == null)
+            Recipe recipe = _recipeOfPair.GetValue(_selectedRecipe.GetValue(__instance), null) as Recipe;
+            if (recipe == null || recipe.m_item == null || Player.m_localPlayer == null)
             {
                 return;
             }
