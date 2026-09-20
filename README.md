@@ -20,6 +20,7 @@ resource counts. Multiple pins and the shopping list come with V3.
 | Repair everything at once | One press of the vanilla repair button repairs the whole pile. |
 | Pinned recipes | Select a recipe in the crafting panel and press **P**: it stays on screen with what you have and what you still need. Press **P** again on it to unpin. |
 | Shopping list | Placeholder, lands with V3. |
+| Sort button | A **Sort** button on the inventory and on any open container: partial stacks are merged, then items are grouped by kind and name. The hotbar row keeps its slots — its stacks are still topped up. |
 
 Repair calls Valheim's own repair routine, so the station rules, the skill gain, the effects and
 the messages are the vanilla ones — only the number of clicks changes. The tracker clones the
@@ -28,6 +29,9 @@ installed on the game at all.
 
 The pin key is `PinRecipeKey` in the config file, and the pin itself is stored there too, so it
 survives a restart.
+
+Sorting a chest changes what that chest contains, exactly as moving items by hand does — the
+same code path, the same save. Hugr writes nothing of its own into the world.
 
 ## Build
 
@@ -89,7 +93,9 @@ Settings are stored in `BepInEx/config/com.ophecy.hugr.cfg` and can also be edit
    with one line per resource, red while you are short.
 8. Close everything and pick up one of those resources — the count climbs on its own.
 9. Quit, relaunch — the recipe is still pinned. Press **P** on it again to unpin.
-10. Join a vanilla server with no Hugr installed — repeat steps 5 and 7, they still work.
+10. Fill a chest with scattered half-stacks, press **Sort** — they merge and group, and the
+    message says how many slots that freed. Do the same on your inventory: row one is untouched.
+11. Join a vanilla server with no Hugr installed — repeat steps 5, 7 and 10, they still work.
 
 If the tab is missing, the log carries a `HUGR-UI-0xx` code naming the step that failed; a
 repair or a tracker that refuses to run logs a `HUGR-REPAIR-0xx`, `HUGR-RECIPE-0xx` or
