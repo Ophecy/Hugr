@@ -1,0 +1,10 @@
+# Build output
+bin/
+obj/
+*.user
+
+# Game and BepInEx assemblies are never versioned: referenced in place via VALHEIM_INSTALL
+
+# IDE
+.vs/
+.idea/
