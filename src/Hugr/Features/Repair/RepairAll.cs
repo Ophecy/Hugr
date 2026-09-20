@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Ophecy
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System;
 using HarmonyLib;
 using Hugr.Configuration;
 
@@ -35,12 +36,20 @@ namespace Hugr.Features.Repair
                     Plugin.Log.LogInfo("Repaired " + repaired + " more item(s).");
                 }
             }
-            catch (HugrException exception)
+            catch (Exception exception)
             {
                 // The vanilla press already repaired one item, so the button keeps working even
                 // when the rest of the pass is refused.
-                Plugin.Log.LogError(exception.Message);
+                Plugin.Log.LogError(Report(exception));
             }
+        }
+
+        /// <summary>A patch never lets an exception reach the game: it reports it instead.</summary>
+        private static string Report(Exception exception)
+        {
+            return exception is HugrException
+                ? exception.Message
+                : "HUGR-REPAIR-000: unexpected failure during repair (" + exception + ").";
         }
     }
 }

@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Ophecy
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System;
 using System.Reflection;
 using HarmonyLib;
 using Hugr.Configuration;
@@ -40,6 +41,22 @@ namespace Hugr.Features.Recipes
 
         private static void OnUpdate(InventoryGui __instance)
         {
+            try
+            {
+                Pin(__instance);
+            }
+            catch (Exception exception)
+            {
+                // Runs inside InventoryGui.Update: nothing may escape into the game loop.
+                Plugin.Log.LogError(
+                    exception is HugrException
+                        ? exception.Message
+                        : "HUGR-RECIPE-000: unexpected failure while pinning (" + exception + ").");
+            }
+        }
+
+        private static void Pin(InventoryGui gui)
+        {
             RecipeTrackerHud.Ensure();
 
             if (!InventoryGui.IsVisible() || !ModConfig.PinRecipeKey.Value.IsDown())
@@ -47,7 +64,7 @@ namespace Hugr.Features.Recipes
                 return;
             }
 
-            Recipe recipe = _recipeOfPair.GetValue(_selectedRecipe.GetValue(__instance), null) as Recipe;
+            Recipe recipe = _recipeOfPair.GetValue(_selectedRecipe.GetValue(gui), null) as Recipe;
             if (recipe == null || recipe.m_item == null || Player.m_localPlayer == null)
             {
                 return;

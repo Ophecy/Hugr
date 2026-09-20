@@ -46,7 +46,7 @@ namespace Hugr.UI
             {
                 Inject(__instance, clones);
             }
-            catch (HugrException exception)
+            catch (Exception exception)
             {
                 foreach (GameObject clone in clones)
                 {
@@ -56,9 +56,13 @@ namespace Hugr.UI
                     }
                 }
 
-                // The settings panel stays usable without the Hugr tab, so the panel is never
-                // brought down with us: the failure is reported with its code instead.
-                Plugin.Log.LogError(exception.Message);
+                // This runs inside Settings.SetAvailableTabs: an exception escaping from here
+                // would take the vanilla panel down with it. Nothing escapes, and what was half
+                // built is gone, so the panel is exactly the one the game would have shown.
+                Plugin.Log.LogError(
+                    exception is HugrException
+                        ? exception.Message
+                        : "HUGR-UI-000: unexpected failure while injecting the tab (" + exception + ").");
             }
         }
 
@@ -170,20 +174,33 @@ namespace Hugr.UI
         {
             foreach (MonoBehaviour behaviour in clone.GetComponentsInChildren<MonoBehaviour>(true))
             {
-                if (behaviour == null)
+                if (behaviour != null && !IsWidget(behaviour.GetType()))
                 {
-                    continue;
+                    UnityEngine.Object.DestroyImmediate(behaviour);
                 }
+            }
+        }
 
-                string space = behaviour.GetType().Namespace ?? string.Empty;
+        /// <summary>
+        /// A widget is anything Unity's UI knows how to drive, including the game's own subclasses
+        /// of it — Valheim's settings rows are built on <c>GUIFramework.GuiToggle</c>, a
+        /// <see cref="Toggle"/>, and dropping it would leave a row that no longer toggles
+        /// anything. Only behaviours that go straight to <see cref="MonoBehaviour"/> are game
+        /// logic.
+        /// </summary>
+        private static bool IsWidget(Type type)
+        {
+            for (Type step = type; step != null && step != typeof(MonoBehaviour); step = step.BaseType)
+            {
+                string space = step.Namespace ?? string.Empty;
                 if (space.StartsWith("UnityEngine", StringComparison.Ordinal)
                     || space.StartsWith("TMPro", StringComparison.Ordinal))
                 {
-                    continue;
+                    return true;
                 }
-
-                UnityEngine.Object.DestroyImmediate(behaviour);
             }
+
+            return false;
         }
 
         /// <summary>
@@ -238,13 +255,19 @@ namespace Hugr.UI
             }
 
             Toggle toggle = row.GetComponentInChildren<Toggle>(true)
-                ?? throw new HugrException("HUGR-UI-007", "Cloned row lost its toggle.");
+                ?? throw new HugrException(
+                    "HUGR-UI-007",
+                    "The clone of row '" + template.Row.name + "' has no toggle, it carries "
+                    + Describe(row) + ".");
 
             toggle.onValueChanged = new Toggle.ToggleEvent();
             toggle.isOn = entry.Value;
 
             TMP_Text caption = row.GetComponentInChildren<TMP_Text>(true)
-                ?? throw new HugrException("HUGR-UI-008", "No text component found on " + row.name + ".");
+                ?? throw new HugrException(
+                    "HUGR-UI-008",
+                    "The clone of row '" + template.Row.name + "' has no caption, it carries "
+                    + Describe(row) + ".");
             caption.text = label;
 
             tab.Add(toggle, entry);
@@ -306,6 +329,21 @@ namespace Hugr.UI
             {
                 label.text = text;
             }
+        }
+
+        /// <summary>Names what a clone is made of, so a broken graft says so in one log line.</summary>
+        private static string Describe(GameObject clone)
+        {
+            List<string> parts = new List<string>();
+            foreach (Component component in clone.GetComponentsInChildren<Component>(true))
+            {
+                if (component != null && parts.Count < 24)
+                {
+                    parts.Add(component.GetType().Name);
+                }
+            }
+
+            return string.Join(", ", parts.ToArray());
         }
 
         private static T Field<T>(Settings settings, string name) where T : class

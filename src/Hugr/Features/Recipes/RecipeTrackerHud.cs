@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Ophecy
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System;
 using System.Collections.Generic;
 using Hugr.Configuration;
 using TMPro;
@@ -64,11 +65,14 @@ namespace Hugr.Features.Recipes
             {
                 Refresh();
             }
-            catch (HugrException exception)
+            catch (Exception exception)
             {
                 // Reporting this every frame would drown the log, so the tracker steps aside
                 // after saying why.
-                Plugin.Log.LogError(exception.Message);
+                Plugin.Log.LogError(
+                    exception is HugrException
+                        ? exception.Message
+                        : "HUGR-RECIPE-006: the tracker was stopped (" + exception + ").");
                 Destroy(this);
             }
         }

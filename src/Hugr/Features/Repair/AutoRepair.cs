@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Ophecy
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System;
 using HarmonyLib;
 using Hugr.Configuration;
 
@@ -39,12 +40,20 @@ namespace Hugr.Features.Repair
                     Plugin.Log.LogInfo("Auto-repaired " + repaired + " item(s).");
                 }
             }
-            catch (HugrException exception)
+            catch (Exception exception)
             {
                 // The inventory must open whatever happens, so the failure is reported and the
                 // panel is left alone.
-                Plugin.Log.LogError(exception.Message);
+                Plugin.Log.LogError(Report(exception));
             }
+        }
+
+        /// <summary>A patch never lets an exception reach the game: it reports it instead.</summary>
+        private static string Report(Exception exception)
+        {
+            return exception is HugrException
+                ? exception.Message
+                : "HUGR-REPAIR-000: unexpected failure during auto-repair (" + exception + ").";
         }
     }
 }

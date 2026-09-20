@@ -46,9 +46,13 @@ namespace Hugr
             {
                 feature(_harmony);
             }
-            catch (HugrException exception)
+            catch (Exception exception)
             {
-                Logger.LogError(exception.Message);
+                // One feature that cannot bind never takes the others, or the game, down.
+                Logger.LogError(
+                    exception is HugrException
+                        ? exception.Message
+                        : "HUGR-PATCH-000: a feature could not be bound (" + exception + ").");
             }
         }
 
