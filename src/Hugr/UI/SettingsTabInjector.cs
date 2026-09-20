@@ -28,7 +28,9 @@ namespace Hugr.UI
     /// registers, initializes and indexes the Hugr page exactly like its own, and
     /// <c>TabHandler.Init</c> — which runs later, on Start — wires the tab button for us.
     /// The graft is all-or-nothing: anything left half-built is destroyed again, because a
-    /// stray clone in the panel is worse than no Hugr tab.
+    /// stray clone in the panel is worse than no Hugr tab. Nothing cloned keeps its game
+    /// scripts either — a page that still carried a vanilla settings tab would be registered
+    /// in its place and would lock the panel shut.
     /// </remarks>
     [HarmonyPatch(typeof(Settings), "SetAvailableTabs")]
     internal static class SettingsTabInjector
@@ -77,13 +79,13 @@ namespace Hugr.UI
             }
 
             RowTemplate template = FindRowTemplate(tabs);
-            Transform row = BuildPage(template, clones, out RectTransform page);
+            RectTransform page = BuildPage(template, clones, out RectTransform content);
             HugrSettingsTab tab = page.gameObject.AddComponent<HugrSettingsTab>();
 
-            AddRow(template, row, 0, tab, ModConfig.AutoRepair, "Automatic repair");
-            AddRow(template, row, 1, tab, ModConfig.RepairAll, "Repair everything at once");
-            AddRow(template, row, 2, tab, ModConfig.RecipeTracker, "Pinned recipes");
-            AddRow(template, row, 3, tab, ModConfig.ShoppingList, "Shopping list");
+            AddRow(template, content, 0, tab, ModConfig.AutoRepair, "Automatic repair");
+            AddRow(template, content, 1, tab, ModConfig.RepairAll, "Repair everything at once");
+            AddRow(template, content, 2, tab, ModConfig.RecipeTracker, "Pinned recipes");
+            AddRow(template, content, 3, tab, ModConfig.ShoppingList, "Shopping list");
 
             Button button = BuildTabButton(settings, tabs[0], clones);
 
@@ -101,43 +103,39 @@ namespace Hugr.UI
         }
 
         /// <summary>
-        /// Clones the page the row template came from and prunes it down to the branch leading to
-        /// that single row. What survives is the vanilla page with its vanilla row container, so
-        /// the rows keep the spacing, the anchors and the alignment of a real settings page.
+        /// Builds the page as an empty rectangle that copies the vanilla page — and, when the
+        /// vanilla rows live in a container of their own, that container too. Copying the
+        /// rectangles rather than the page itself reproduces the vanilla coordinates without
+        /// inheriting a single game script, so nothing on the Hugr page can still believe it is
+        /// driving the game's options.
         /// </summary>
-        private static Transform BuildPage(RowTemplate template, List<GameObject> clones, out RectTransform page)
+        private static RectTransform BuildPage(
+            RowTemplate template, List<GameObject> clones, out RectTransform content)
         {
-            List<int> path = IndexPath(template.Row, template.Page);
-            if (path.Count == 0)
-            {
-                throw new HugrException(
-                    "HUGR-UI-011", "The row template is the page itself, there is nothing to clone.");
-            }
-
-            page = UnityEngine.Object.Instantiate(template.Page, template.Page.parent);
+            RectTransform page = Empty(PageName, template.Page.parent, template.Page);
             clones.Add(page.gameObject);
-            page.gameObject.name = PageName;
             page.gameObject.SetActive(false);
 
-            StripScripts(page.gameObject);
+            RectTransform container = template.Row.parent as RectTransform;
+            content = container == null || container == template.Page
+                ? page
+                : Empty("Content", page, container);
 
-            Transform row = Resolve(page, path)
-                ?? throw new HugrException("HUGR-UI-011", "The cloned page lost its row template.");
+            return page;
+        }
 
-            for (Transform node = row; node != page; node = node.parent)
-            {
-                Transform parent = node.parent;
-                for (int index = parent.childCount - 1; index >= 0; index--)
-                {
-                    Transform child = parent.GetChild(index);
-                    if (child != node)
-                    {
-                        UnityEngine.Object.DestroyImmediate(child.gameObject);
-                    }
-                }
-            }
-
-            return row;
+        private static RectTransform Empty(string name, Transform parent, RectTransform model)
+        {
+            RectTransform rect = new GameObject(name, typeof(RectTransform)).GetComponent<RectTransform>();
+            rect.SetParent(parent, false);
+            rect.anchorMin = model.anchorMin;
+            rect.anchorMax = model.anchorMax;
+            rect.pivot = model.pivot;
+            rect.sizeDelta = model.sizeDelta;
+            rect.anchoredPosition3D = model.anchoredPosition3D;
+            rect.localScale = model.localScale;
+            rect.localRotation = model.localRotation;
+            return rect;
         }
 
         private static Button BuildTabButton(Settings settings, TabHandler.Tab template, List<GameObject> clones)
@@ -223,18 +221,15 @@ namespace Hugr.UI
         }
 
         private static void AddRow(
-            RowTemplate template, Transform row0, int index, HugrSettingsTab tab,
+            RowTemplate template, RectTransform content, int index, HugrSettingsTab tab,
             ConfigEntry<bool> entry, string label)
         {
-            GameObject row = index == 0
-                ? row0.gameObject
-                : UnityEngine.Object.Instantiate(row0.gameObject, row0.parent);
-
+            GameObject row = UnityEngine.Object.Instantiate(template.Row.gameObject, content);
             row.name = "HugrRow_" + entry.Definition.Key;
             row.SetActive(true);
+            StripScripts(row);
 
-            // Stacks the rows the way the vanilla page does. A layout group on the inherited
-            // container, if there is one, overrides this on its own.
+            // Stacks the rows the way the vanilla page does, from where its own first row sits.
             RectTransform rect = row.transform as RectTransform;
             if (rect != null)
             {
@@ -283,6 +278,12 @@ namespace Hugr.UI
                     row = row.parent;
                 }
 
+                if (row == candidate.m_page)
+                {
+                    // Caption and toggle are not grouped on this page: there is no row to clone.
+                    continue;
+                }
+
                 return new RowTemplate(candidate.m_page, row);
             }
 
@@ -305,33 +306,6 @@ namespace Hugr.UI
             {
                 label.text = text;
             }
-        }
-
-        private static List<int> IndexPath(Transform node, Transform root)
-        {
-            List<int> path = new List<int>();
-            for (Transform step = node; step != root && step != null; step = step.parent)
-            {
-                path.Insert(0, step.GetSiblingIndex());
-            }
-
-            return path;
-        }
-
-        private static Transform Resolve(Transform root, List<int> path)
-        {
-            Transform node = root;
-            foreach (int index in path)
-            {
-                if (node == null || index >= node.childCount)
-                {
-                    return null;
-                }
-
-                node = node.GetChild(index);
-            }
-
-            return node == root ? null : node;
         }
 
         private static T Field<T>(Settings settings, string name) where T : class
