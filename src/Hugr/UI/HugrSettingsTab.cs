@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using BepInEx.Configuration;
-using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Valheim.SettingsGui;
@@ -82,18 +81,6 @@ namespace Hugr.UI
             internal Toggle Toggle { get; }
 
             internal ConfigEntry<bool> Entry { get; }
-        }
-    }
-
-    /// <summary>
-    /// Raised when the vanilla settings panel does not expose what Hugr needs to graft its tab.
-    /// Never swallowed silently: caught at the injection boundary and logged with its code.
-    /// </summary>
-    internal class HugrUiException : Exception
-    {
-        internal HugrUiException(string code, string message)
-            : base(code + ": " + message)
-        {
         }
     }
 }

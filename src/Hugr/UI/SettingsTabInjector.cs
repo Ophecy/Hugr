@@ -21,19 +21,27 @@ namespace Hugr.UI
     /// panel itself, which is what keeps this working across game updates.
     /// Execution: client. Persistence: client (BepInEx config). Server interaction: none.
     /// </summary>
-    [HarmonyPatch(typeof(Settings), "Awake")]
+    /// <remarks>
+    /// The graft runs just before <c>Settings.SetAvailableTabs</c>, which rebuilds the panel's
+    /// <c>SettingsTabs</c> list from <c>TabHandler.m_tabs</c> and picks each page's
+    /// <see cref="ISettingsTab"/> component up on its own. Adding the tab there means the game
+    /// registers, initializes and indexes the Hugr page exactly like its own, and
+    /// <c>TabHandler.Init</c> — which runs later, on Start — wires the tab button for us.
+    /// </remarks>
+    [HarmonyPatch(typeof(Settings), "SetAvailableTabs")]
     internal static class SettingsTabInjector
     {
         private const string TabLabel = "Hugr";
+        private const string PageName = "HugrSettings";
 
-        private static void Postfix(Settings __instance)
+        private static void Prefix(Settings __instance)
         {
             try
             {
                 Inject(__instance);
                 Plugin.Log.LogInfo("Settings tab injected.");
             }
-            catch (HugrUiException exception)
+            catch (HugrException exception)
             {
                 // The settings panel stays usable without the Hugr tab, so the panel is never
                 // brought down with us: the failure is reported with its code instead.
@@ -44,16 +52,18 @@ namespace Hugr.UI
         private static void Inject(Settings settings)
         {
             TabHandler tabHandler = Field<TabHandler>(settings, "m_tabHandler")
-                ?? throw new HugrUiException("HUGR-UI-001", "Settings has no TabHandler.");
+                ?? throw new HugrException("HUGR-UI-001", "Settings has no TabHandler.");
 
             List<TabHandler.Tab> tabs = tabHandler.m_tabs;
             if (tabs == null || tabs.Count == 0)
             {
-                throw new HugrUiException("HUGR-UI-002", "Settings panel exposes no tab to clone.");
+                throw new HugrException("HUGR-UI-002", "Settings panel exposes no tab to clone.");
             }
 
-            List<ISettingsTab> settingsTabs = Field<List<ISettingsTab>>(settings, "SettingsTabs")
-                ?? throw new HugrUiException("HUGR-UI-003", "Settings has no tab list.");
+            if (tabs.Exists(existing => existing.m_page != null && existing.m_page.name == PageName))
+            {
+                return;
+            }
 
             GameObject rowTemplate = FindRowTemplate(tabs);
             TabHandler.Tab template = tabs[0];
@@ -72,10 +82,6 @@ namespace Hugr.UI
                 m_default = false,
                 m_onClick = new UnityEvent(),
             });
-
-            // Both lists are indexed in step by the panel, so the tab lands at the same
-            // position in each.
-            settingsTabs.Add(tab);
         }
 
         /// <summary>
@@ -86,11 +92,11 @@ namespace Hugr.UI
         {
             if (template.m_page == null)
             {
-                throw new HugrUiException("HUGR-UI-004", "Template tab has no page to clone.");
+                throw new HugrException("HUGR-UI-004", "Template tab has no page to clone.");
             }
 
             RectTransform page = UnityEngine.Object.Instantiate(template.m_page, template.m_page.parent);
-            page.gameObject.name = "HugrSettings";
+            page.gameObject.name = PageName;
             page.gameObject.SetActive(false);
 
             foreach (ISettingsTab inherited in page.GetComponentsInChildren<ISettingsTab>(true))
@@ -119,13 +125,13 @@ namespace Hugr.UI
         {
             if (template.m_button == null)
             {
-                throw new HugrUiException("HUGR-UI-005", "Template tab has no button to clone.");
+                throw new HugrException("HUGR-UI-005", "Template tab has no button to clone.");
             }
 
             Button button = UnityEngine.Object.Instantiate(template.m_button, template.m_button.transform.parent);
             button.gameObject.name = "HugrTab";
 
-            // The clone inherits the template's wiring; TabHandler re-binds it on startup.
+            // The clone inherits the template's wiring; TabHandler.Init re-binds it on Start.
             button.onClick = new Button.ButtonClickedEvent();
             SetLabel(button.gameObject, TabLabel, "HUGR-UI-006");
 
@@ -141,7 +147,7 @@ namespace Hugr.UI
             row.SetActive(true);
 
             Toggle toggle = row.GetComponentInChildren<Toggle>(true)
-                ?? throw new HugrUiException("HUGR-UI-007", "Cloned row lost its toggle.");
+                ?? throw new HugrException("HUGR-UI-007", "Cloned row lost its toggle.");
 
             toggle.onValueChanged = new Toggle.ToggleEvent();
             toggle.isOn = entry.Value;
@@ -185,13 +191,13 @@ namespace Hugr.UI
                 return toggle.gameObject;
             }
 
-            throw new HugrUiException("HUGR-UI-009", "No vanilla toggle found to use as a row template.");
+            throw new HugrException("HUGR-UI-009", "No vanilla toggle found to use as a row template.");
         }
 
         private static void SetLabel(GameObject target, string text, string errorCode)
         {
             TMP_Text label = target.GetComponentInChildren<TMP_Text>(true)
-                ?? throw new HugrUiException(errorCode, "No text component found on " + target.name + ".");
+                ?? throw new HugrException(errorCode, "No text component found on " + target.name + ".");
 
             // Valheim rewrites captions from its localization table on enable, which would
             // overwrite a name that has no translation key.
@@ -214,7 +220,7 @@ namespace Hugr.UI
             }
             catch (Exception exception)
             {
-                throw new HugrUiException(
+                throw new HugrException(
                     "HUGR-UI-010", "Settings." + name + " is not reachable (" + exception.Message + ").");
             }
         }
