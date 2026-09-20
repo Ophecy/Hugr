@@ -88,6 +88,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.RepairAll, "Repair everything at once");
             AddRow(row, tab, ModConfig.RecipeTracker, "Pinned recipes");
             AddRow(row, tab, ModConfig.ShoppingList, "Shopping list");
+            AddRow(row, tab, ModConfig.SortButton, "Sort button");
 
             Button button = BuildTabButton(settings, tabs[0], clones);
 
@@ -130,7 +131,7 @@ namespace Hugr.UI
             page.gameObject.name = PageName;
             page.gameObject.SetActive(false);
 
-            StripScripts(page.gameObject);
+            Widgets.StripScripts(page.gameObject);
 
             Transform row = Resolve(page, path)
                 ?? throw new HugrException("HUGR-UI-011", "The cloned page lost its row template.");
@@ -160,54 +161,14 @@ namespace Hugr.UI
             clones.Add(button.gameObject);
             button.gameObject.name = "HugrTab";
 
-            StripScripts(button.gameObject);
+            Widgets.StripScripts(button.gameObject);
             StripGamepadHint(settings, button.gameObject);
 
             // The clone inherits the template's wiring; TabHandler.Init re-binds it on Start.
             button.onClick = new Button.ButtonClickedEvent();
-            SetTabLabel(button.gameObject, TabLabel);
+            Widgets.SetLabel(button.gameObject, TabLabel, "HUGR-UI-006");
 
             return button;
-        }
-
-        /// <summary>
-        /// Removes every game script from a clone and keeps only the Unity UI machinery. A cloned
-        /// widget otherwise drags along behaviours that still believe in the hierarchy they were
-        /// built for: a settings page that writes into the game's options, a localizer that
-        /// rewrites the caption, a gamepad handler that registers our button as one of the
-        /// vanilla ones.
-        /// </summary>
-        private static void StripScripts(GameObject clone)
-        {
-            foreach (MonoBehaviour behaviour in clone.GetComponentsInChildren<MonoBehaviour>(true))
-            {
-                if (behaviour != null && !IsWidget(behaviour.GetType()))
-                {
-                    UnityEngine.Object.DestroyImmediate(behaviour);
-                }
-            }
-        }
-
-        /// <summary>
-        /// A widget is anything Unity's UI knows how to drive, including the game's own subclasses
-        /// of it — Valheim's settings rows are built on <c>GUIFramework.GuiToggle</c>, a
-        /// <see cref="Toggle"/>, and dropping it would leave a row that no longer toggles
-        /// anything. Only behaviours that go straight to <see cref="MonoBehaviour"/> are game
-        /// logic.
-        /// </summary>
-        private static bool IsWidget(Type type)
-        {
-            for (Type step = type; step != null && step != typeof(MonoBehaviour); step = step.BaseType)
-            {
-                string space = step.Namespace ?? string.Empty;
-                if (space.StartsWith("UnityEngine", StringComparison.Ordinal)
-                    || space.StartsWith("TMPro", StringComparison.Ordinal))
-                {
-                    return true;
-                }
-            }
-
-            return false;
         }
 
         /// <summary>
@@ -258,14 +219,14 @@ namespace Hugr.UI
 
             Toggle toggle = row.GetComponentInChildren<Toggle>(true)
                 ?? throw new HugrException(
-                    "HUGR-UI-007", "The cloned row has no toggle, it carries " + Describe(row) + ".");
+                    "HUGR-UI-007", "The cloned row has no toggle, it carries " + Widgets.Describe(row) + ".");
 
             toggle.onValueChanged = new Toggle.ToggleEvent();
             toggle.isOn = entry.Value;
 
             TMP_Text caption = row.GetComponentInChildren<TMP_Text>(true)
                 ?? throw new HugrException(
-                    "HUGR-UI-008", "The cloned row has no caption, it carries " + Describe(row) + ".");
+                    "HUGR-UI-008", "The cloned row has no caption, it carries " + Widgets.Describe(row) + ".");
             caption.text = label;
 
             tab.Add(toggle, entry);
@@ -312,24 +273,6 @@ namespace Hugr.UI
             throw new HugrException("HUGR-UI-009", "No vanilla toggle found to use as a row template.");
         }
 
-        /// <summary>
-        /// Renames every caption of a tab button: Valheim keeps a second copy inside the button's
-        /// "Selected" child, and that one is the only one visible once the tab is open.
-        /// </summary>
-        private static void SetTabLabel(GameObject button, string text)
-        {
-            TMP_Text[] labels = button.GetComponentsInChildren<TMP_Text>(true);
-            if (labels.Length == 0)
-            {
-                throw new HugrException("HUGR-UI-006", "No text component found on " + button.name + ".");
-            }
-
-            foreach (TMP_Text label in labels)
-            {
-                label.text = text;
-            }
-        }
-
         private static List<int> IndexPath(Transform node, Transform root)
         {
             List<int> path = new List<int>();
@@ -355,21 +298,6 @@ namespace Hugr.UI
             }
 
             return node == root ? null : node;
-        }
-
-        /// <summary>Names what a clone is made of, so a broken graft says so in one log line.</summary>
-        private static string Describe(GameObject clone)
-        {
-            List<string> parts = new List<string>();
-            foreach (Component component in clone.GetComponentsInChildren<Component>(true))
-            {
-                if (component != null && parts.Count < 24)
-                {
-                    parts.Add(component.GetType().Name);
-                }
-            }
-
-            return string.Join(", ", parts.ToArray());
         }
 
         private static T Field<T>(Settings settings, string name) where T : class

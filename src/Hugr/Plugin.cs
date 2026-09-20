@@ -8,6 +8,7 @@ using HarmonyLib;
 using Hugr.Configuration;
 using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
+using Hugr.Features.Sorting;
 using Hugr.UI;
 
 namespace Hugr
@@ -36,6 +37,7 @@ namespace Hugr
             Bind(AutoRepair.Bind);
             Bind(RepairAll.Bind);
             Bind(RecipePinning.Bind);
+            Bind(SortButtons.Bind);
 
             Logger.LogInfo("Hugr loaded.");
         }
@@ -64,6 +66,7 @@ namespace Hugr
         {
             _harmony.UnpatchSelf();
             RecipeTrackerHud.Remove();
+            SortButtons.Remove();
         }
     }
 }

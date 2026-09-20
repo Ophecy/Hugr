@@ -25,6 +25,8 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> ShoppingList { get; private set; }
 
+        internal static ConfigEntry<bool> SortButton { get; private set; }
+
         internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
 
         /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
@@ -47,6 +49,10 @@ namespace Hugr.Configuration
             ShoppingList = config.Bind(
                 "Recipes", "ShoppingList", false,
                 "Aggregate the resources required by every pinned recipe.");
+
+            SortButton = config.Bind(
+                "Inventory", "SortButton", true,
+                "Add a Sort button to the inventory and to open containers.");
 
             PinRecipeKey = config.Bind(
                 "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),
