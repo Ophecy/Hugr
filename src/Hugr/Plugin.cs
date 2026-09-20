@@ -6,6 +6,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using Hugr.Configuration;
+using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
 using Hugr.UI;
 
@@ -34,6 +35,7 @@ namespace Hugr
             _harmony.PatchAll(typeof(SettingsTabInjector));
             Bind(AutoRepair.Bind);
             Bind(RepairAll.Bind);
+            Bind(RecipePinning.Bind);
 
             Logger.LogInfo("Hugr loaded.");
         }

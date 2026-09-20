@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 using BepInEx.Configuration;
+using UnityEngine;
 
 namespace Hugr.Configuration
 {
@@ -24,6 +25,11 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> ShoppingList { get; private set; }
 
+        internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
+
+        /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
+        internal static ConfigEntry<string> PinnedRecipe { get; private set; }
+
         internal static void Bind(ConfigFile config)
         {
             AutoRepair = config.Bind(
@@ -41,6 +47,14 @@ namespace Hugr.Configuration
             ShoppingList = config.Bind(
                 "Recipes", "ShoppingList", false,
                 "Aggregate the resources required by every pinned recipe.");
+
+            PinRecipeKey = config.Bind(
+                "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),
+                "Pins or unpins the recipe selected in the crafting panel.");
+
+            PinnedRecipe = config.Bind(
+                "Recipes", "PinnedRecipe", string.Empty,
+                "Pinned recipe, by item prefab name. Pin from the crafting panel rather than here.");
         }
     }
 }
