@@ -91,6 +91,8 @@ namespace Hugr.UI
             AddRow(template, content, 2, tab, ModConfig.RecipeTracker, "Pinned recipes");
             AddRow(template, content, 3, tab, ModConfig.ShoppingList, "Shopping list");
 
+            Align(template, content);
+
             Button button = BuildTabButton(settings, tabs[0], clones);
 
             tabs.Add(new TabHandler.Tab
@@ -103,15 +105,15 @@ namespace Hugr.UI
 
             Plugin.Log.LogInfo(
                 "Settings tab injected (page '" + template.Page.name + "', row '" + template.Row.name
-                + "', step " + template.Step + ").");
+                + "' at " + template.TopY + ", step " + template.Step + ", under "
+                + template.ContainerPath + ").");
         }
 
         /// <summary>
-        /// Builds the page as an empty rectangle that copies the vanilla page — and, when the
-        /// vanilla rows live in a container of their own, that container too. Copying the
-        /// rectangles rather than the page itself reproduces the vanilla coordinates without
-        /// inheriting a single game script, so nothing on the Hugr page can still believe it is
-        /// driving the game's options.
+        /// Builds the page as an empty rectangle that copies the vanilla page, then the same for
+        /// every container the vanilla rows sit in. Copying the rectangles rather than the page
+        /// itself reproduces the vanilla coordinates without inheriting a single game script, so
+        /// nothing on the Hugr page can still believe it is driving the game's options.
         /// </summary>
         private static RectTransform BuildPage(
             RowTemplate template, List<GameObject> clones, out RectTransform content)
@@ -120,12 +122,38 @@ namespace Hugr.UI
             clones.Add(page.gameObject);
             page.gameObject.SetActive(false);
 
-            RectTransform container = template.Row.parent as RectTransform;
-            content = container == null || container == template.Page
-                ? page
-                : Empty("Content", page, container);
+            // One empty rectangle per level of the vanilla chain: a row then lands at exactly
+            // the coordinates it had in the vanilla page, whatever nesting that page uses.
+            content = page;
+            foreach (RectTransform level in template.Containers)
+            {
+                content = Empty(level.name, content, level);
+            }
 
             return page;
+        }
+
+        /// <summary>
+        /// Puts the first Hugr row exactly where the vanilla row it was cloned from sits. The
+        /// rebuilt chain of rectangles is meant to do that on its own; measuring what is left and
+        /// correcting it once means a page that nests or anchors its rows differently still lands
+        /// right, instead of relying on the chain being a faithful copy.
+        /// </summary>
+        private static void Align(RowTemplate template, RectTransform content)
+        {
+            if (content.childCount == 0)
+            {
+                return;
+            }
+
+            Vector3 drift = template.Row.position - content.GetChild(0).position;
+            if (drift.sqrMagnitude < 0.0001f)
+            {
+                return;
+            }
+
+            content.position += drift;
+            Plugin.Log.LogInfo("Hugr rows realigned by " + drift + ".");
         }
 
         private static RectTransform Empty(string name, Transform parent, RectTransform model)
@@ -372,6 +400,16 @@ namespace Hugr.UI
                 Page = page;
                 Row = row;
 
+                Containers = new List<RectTransform>();
+                for (Transform node = row.parent; node != null && node != page; node = node.parent)
+                {
+                    RectTransform level = node as RectTransform;
+                    if (level != null)
+                    {
+                        Containers.Insert(0, level);
+                    }
+                }
+
                 RectTransform rect = row as RectTransform;
                 TopY = rect != null ? rect.anchoredPosition.y : 0f;
                 Step = MeasureStep(row, rect);
@@ -380,6 +418,23 @@ namespace Hugr.UI
             internal RectTransform Page { get; }
 
             internal Transform Row { get; }
+
+            /// <summary>Every container between the page and the row, outermost first.</summary>
+            internal List<RectTransform> Containers { get; }
+
+            internal string ContainerPath
+            {
+                get
+                {
+                    List<string> names = new List<string>();
+                    foreach (RectTransform level in Containers)
+                    {
+                        names.Add(level.name);
+                    }
+
+                    return names.Count == 0 ? "the page" : string.Join("/", names.ToArray());
+                }
+            }
 
             /// <summary>Where the first row of a vanilla page sits.</summary>
             internal float TopY { get; }
