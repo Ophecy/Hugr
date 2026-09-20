@@ -11,12 +11,14 @@ namespace Hugr.Configuration
     /// itself.
     /// </summary>
     /// <remarks>
-    /// V0: the feature toggles carry no gameplay behaviour yet, they only prove the
-    /// config round-trip. Each feature reads its own entry when it lands.
+    /// A toggle is the feature's switch, not a flag it reads: turning one off removes its
+    /// Harmony patch. The recipe entries carry no behaviour yet, they land with V2.
     /// </remarks>
     internal static class ModConfig
     {
         internal static ConfigEntry<bool> AutoRepair { get; private set; }
+
+        internal static ConfigEntry<bool> RepairAll { get; private set; }
 
         internal static ConfigEntry<bool> RecipeTracker { get; private set; }
 
@@ -27,6 +29,10 @@ namespace Hugr.Configuration
             AutoRepair = config.Bind(
                 "Repair", "AutoRepair", true,
                 "Repair every compatible item when a crafting station is opened.");
+
+            RepairAll = config.Bind(
+                "Repair", "RepairAll", true,
+                "Repair every compatible item in a single press of the repair button.");
 
             RecipeTracker = config.Bind(
                 "Recipes", "RecipeTracker", true,

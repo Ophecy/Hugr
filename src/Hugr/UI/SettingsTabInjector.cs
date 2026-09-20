@@ -72,6 +72,7 @@ namespace Hugr.UI
             HugrSettingsTab tab = page.gameObject.AddComponent<HugrSettingsTab>();
 
             AddRow(page, rowTemplate, tab, ModConfig.AutoRepair, "Automatic repair");
+            AddRow(page, rowTemplate, tab, ModConfig.RepairAll, "Repair everything at once");
             AddRow(page, rowTemplate, tab, ModConfig.RecipeTracker, "Pinned recipes");
             AddRow(page, rowTemplate, tab, ModConfig.ShoppingList, "Shopping list");
 

@@ -33,6 +33,7 @@ namespace Hugr
 
             _harmony.PatchAll(typeof(SettingsTabInjector));
             Bind(AutoRepair.Bind);
+            Bind(RepairAll.Bind);
 
             Logger.LogInfo("Hugr loaded.");
         }
