@@ -50,6 +50,25 @@ copied to `<VALHEIM_INSTALL>\BepInEx\plugins\Hugr\` in one step.
 A Release build compiles without deploying. If `VALHEIM_INSTALL` is missing or wrong, the
 build stops with a message naming the variable rather than a wall of missing-type errors.
 
+### Hot reload
+
+Restarting Valheim for every change is the slow way. Install
+[ScriptEngine](https://thunderstore.io/c/valheim/p/ValheimModding/ScriptEngine/) — the BepInEx
+team's reloader — and build with:
+
+```
+dotnet build src/Hugr/Hugr.csproj -c Debug -p:HotReload=true
+```
+
+`Hugr.dll` then lands in `BepInEx/scripts/` instead of `BepInEx/plugins/`, and **F6** in game
+reloads it: patches are removed, the plugin is rebuilt from the new file and re-applies itself.
+The build clears the other location on its way, because the same plugin GUID loaded twice is a
+confusing failure.
+
+What comes back on its own after a reload: the repair patches, the recipe tracker, and the
+settings tab the next time the panel is opened. Reload with the settings panel closed — a panel
+already on screen keeps the previous build's tab until it is closed and reopened.
+
 ## Usage
 
 Open Valheim's **Settings** panel, from the main menu or in game: Hugr adds its own tab

@@ -56,9 +56,14 @@ namespace Hugr
             }
         }
 
+        /// <summary>
+        /// Leaves the game as it was found: patches removed, widgets removed. This is what makes
+        /// a hot reload clean rather than a pile of two builds running side by side.
+        /// </summary>
         private void OnDestroy()
         {
             _harmony.UnpatchSelf();
+            RecipeTrackerHud.Remove();
         }
     }
 }

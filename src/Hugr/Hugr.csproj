@@ -34,8 +34,23 @@
     <Reference Include="0Harmony" HintPath="$(BepInExCore)\0Harmony.dll" Private="false" />
   </ItemGroup>
 
+  <!--
+    Debug builds land in the game. With -p:HotReload=true they go to BepInEx\scripts instead,
+    where ScriptEngine reloads them in the running game (F6). The other location is cleared in
+    the same step: the same plugin GUID loaded twice is a confusing failure.
+  -->
+  <PropertyGroup>
+    <HugrPluginDir>$(VALHEIM_INSTALL)\BepInEx\plugins\Hugr</HugrPluginDir>
+    <HugrScriptDir>$(VALHEIM_INSTALL)\BepInEx\scripts</HugrScriptDir>
+    <HugrDeployDir Condition="'$(HotReload)' == 'true'">$(HugrScriptDir)</HugrDeployDir>
+    <HugrDeployDir Condition="'$(HotReload)' != 'true'">$(HugrPluginDir)</HugrDeployDir>
+  </PropertyGroup>
+
   <Target Name="DeployToValheim" AfterTargets="Build" Condition="'$(Configuration)' == 'Debug'">
-    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(VALHEIM_INSTALL)\BepInEx\plugins\Hugr\" />
+    <Delete Files="$(HugrPluginDir)\$(AssemblyName).dll" Condition="'$(HotReload)' == 'true'" />
+    <Delete Files="$(HugrScriptDir)\$(AssemblyName).dll" Condition="'$(HotReload)' != 'true'" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(HugrDeployDir)\" />
+    <Message Importance="high" Text="Hugr deployed to $(HugrDeployDir)" />
   </Target>
 
 </Project>

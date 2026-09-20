@@ -45,6 +45,24 @@ namespace Hugr.Features.Recipes
             }
         }
 
+        /// <summary>
+        /// Takes the tracker off the HUD. Called when the plugin unloads, so a hot reload does
+        /// not leave the previous build's tracker running next to the new one.
+        /// </summary>
+        internal static void Remove()
+        {
+            Hud hud = Hud.instance;
+            if (hud == null)
+            {
+                return;
+            }
+
+            foreach (RecipeTrackerHud tracker in hud.GetComponents<RecipeTrackerHud>())
+            {
+                DestroyImmediate(tracker);
+            }
+        }
+
         private void Update()
         {
             if (!ModConfig.RecipeTracker.Value)
