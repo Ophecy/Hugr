@@ -15,6 +15,11 @@ namespace Hugr.UI
     /// vanilla <see cref="ISettingsTab"/> contract so the panel drives it like its own tabs:
     /// values load when the panel opens, OK commits them, Back discards them.
     /// </summary>
+    /// <remarks>
+    /// Every entry point is sealed off: <c>Settings</c> drives its tabs in a loop and counts the
+    /// saves, so an exception escaping from here would stop the loop and leave the panel open
+    /// with no way out. Hugr reports the failure and lets the panel carry on.
+    /// </remarks>
     internal class HugrSettingsTab : MonoBehaviour, ISettingsTab
     {
         private readonly List<Binding> _bindings = new List<Binding>();
@@ -41,12 +46,26 @@ namespace Hugr.UI
         /// <summary>Commits the toggles, then tells the panel this tab is done saving.</summary>
         public void OnOkAsync(OkActionCompletedHandler onCompleted)
         {
-            foreach (Binding binding in _bindings)
+            try
             {
-                binding.Entry.Value = binding.Toggle.isOn;
+                foreach (Binding binding in _bindings)
+                {
+                    if (binding.Toggle != null)
+                    {
+                        binding.Entry.Value = binding.Toggle.isOn;
+                    }
+                }
             }
-
-            onCompleted?.Invoke();
+            catch (Exception exception)
+            {
+                Plugin.Log.LogError("HUGR-UI-013: Hugr settings were not saved (" + exception.Message + ").");
+            }
+            finally
+            {
+                // Settings counts this call to know when every tab is done: skipping it would
+                // hang the OK button for good.
+                onCompleted?.Invoke();
+            }
         }
 
         public void OnBack()
@@ -64,9 +83,19 @@ namespace Hugr.UI
 
         private void LoadFromConfig()
         {
-            foreach (Binding binding in _bindings)
+            try
             {
-                binding.Toggle.isOn = binding.Entry.Value;
+                foreach (Binding binding in _bindings)
+                {
+                    if (binding.Toggle != null)
+                    {
+                        binding.Toggle.isOn = binding.Entry.Value;
+                    }
+                }
+            }
+            catch (Exception exception)
+            {
+                Plugin.Log.LogError("HUGR-UI-014: Hugr settings were not loaded (" + exception.Message + ").");
             }
         }
 

@@ -27,6 +27,8 @@ namespace Hugr.UI
     /// <see cref="ISettingsTab"/> component up on its own. Adding the tab there means the game
     /// registers, initializes and indexes the Hugr page exactly like its own, and
     /// <c>TabHandler.Init</c> — which runs later, on Start — wires the tab button for us.
+    /// The graft is all-or-nothing: anything left half-built is destroyed again, because a
+    /// stray clone in the panel is worse than no Hugr tab.
     /// </remarks>
     [HarmonyPatch(typeof(Settings), "SetAvailableTabs")]
     internal static class SettingsTabInjector
@@ -36,20 +38,29 @@ namespace Hugr.UI
 
         private static void Prefix(Settings __instance)
         {
+            List<GameObject> clones = new List<GameObject>();
+
             try
             {
-                Inject(__instance);
-                Plugin.Log.LogInfo("Settings tab injected.");
+                Inject(__instance, clones);
             }
             catch (HugrException exception)
             {
+                foreach (GameObject clone in clones)
+                {
+                    if (clone != null)
+                    {
+                        UnityEngine.Object.DestroyImmediate(clone);
+                    }
+                }
+
                 // The settings panel stays usable without the Hugr tab, so the panel is never
                 // brought down with us: the failure is reported with its code instead.
                 Plugin.Log.LogError(exception.Message);
             }
         }
 
-        private static void Inject(Settings settings)
+        private static void Inject(Settings settings, List<GameObject> clones)
         {
             TabHandler tabHandler = Field<TabHandler>(settings, "m_tabHandler")
                 ?? throw new HugrException("HUGR-UI-001", "Settings has no TabHandler.");
@@ -66,7 +77,7 @@ namespace Hugr.UI
             }
 
             RowTemplate template = FindRowTemplate(tabs);
-            Transform row = BuildPage(template, out RectTransform page);
+            Transform row = BuildPage(template, clones, out RectTransform page);
             HugrSettingsTab tab = page.gameObject.AddComponent<HugrSettingsTab>();
 
             AddRow(template, row, 0, tab, ModConfig.AutoRepair, "Automatic repair");
@@ -74,13 +85,19 @@ namespace Hugr.UI
             AddRow(template, row, 2, tab, ModConfig.RecipeTracker, "Pinned recipes");
             AddRow(template, row, 3, tab, ModConfig.ShoppingList, "Shopping list");
 
+            Button button = BuildTabButton(settings, tabs[0], clones);
+
             tabs.Add(new TabHandler.Tab
             {
-                m_button = BuildTabButton(settings, tabs[0]),
+                m_button = button,
                 m_page = page,
                 m_default = false,
                 m_onClick = new UnityEvent(),
             });
+
+            Plugin.Log.LogInfo(
+                "Settings tab injected (page '" + template.Page.name + "', row '" + template.Row.name
+                + "', step " + template.Step + ").");
         }
 
         /// <summary>
@@ -88,18 +105,21 @@ namespace Hugr.UI
         /// that single row. What survives is the vanilla page with its vanilla row container, so
         /// the rows keep the spacing, the anchors and the alignment of a real settings page.
         /// </summary>
-        private static Transform BuildPage(RowTemplate template, out RectTransform page)
+        private static Transform BuildPage(RowTemplate template, List<GameObject> clones, out RectTransform page)
         {
             List<int> path = IndexPath(template.Row, template.Page);
+            if (path.Count == 0)
+            {
+                throw new HugrException(
+                    "HUGR-UI-011", "The row template is the page itself, there is nothing to clone.");
+            }
 
             page = UnityEngine.Object.Instantiate(template.Page, template.Page.parent);
+            clones.Add(page.gameObject);
             page.gameObject.name = PageName;
             page.gameObject.SetActive(false);
 
-            foreach (ISettingsTab inherited in page.GetComponentsInChildren<ISettingsTab>(true))
-            {
-                UnityEngine.Object.DestroyImmediate(inherited as Component);
-            }
+            StripScripts(page.gameObject);
 
             Transform row = Resolve(page, path)
                 ?? throw new HugrException("HUGR-UI-011", "The cloned page lost its row template.");
@@ -120,7 +140,7 @@ namespace Hugr.UI
             return row;
         }
 
-        private static Button BuildTabButton(Settings settings, TabHandler.Tab template)
+        private static Button BuildTabButton(Settings settings, TabHandler.Tab template, List<GameObject> clones)
         {
             if (template.m_button == null)
             {
@@ -128,14 +148,44 @@ namespace Hugr.UI
             }
 
             Button button = UnityEngine.Object.Instantiate(template.m_button, template.m_button.transform.parent);
+            clones.Add(button.gameObject);
             button.gameObject.name = "HugrTab";
+
+            StripScripts(button.gameObject);
+            StripGamepadHint(settings, button.gameObject);
 
             // The clone inherits the template's wiring; TabHandler.Init re-binds it on Start.
             button.onClick = new Button.ButtonClickedEvent();
-            StripGamepadHints(settings, button.gameObject);
             SetTabLabel(button.gameObject, TabLabel);
 
             return button;
+        }
+
+        /// <summary>
+        /// Removes every game script from a clone and keeps only the Unity UI machinery. A cloned
+        /// widget otherwise drags along behaviours that still believe in the hierarchy they were
+        /// built for: a settings page that writes into the game's options, a localizer that
+        /// rewrites the caption, a gamepad handler that registers our button as one of the
+        /// vanilla ones.
+        /// </summary>
+        private static void StripScripts(GameObject clone)
+        {
+            foreach (MonoBehaviour behaviour in clone.GetComponentsInChildren<MonoBehaviour>(true))
+            {
+                if (behaviour == null)
+                {
+                    continue;
+                }
+
+                string space = behaviour.GetType().Namespace ?? string.Empty;
+                if (space.StartsWith("UnityEngine", StringComparison.Ordinal)
+                    || space.StartsWith("TMPro", StringComparison.Ordinal))
+                {
+                    continue;
+                }
+
+                UnityEngine.Object.DestroyImmediate(behaviour);
+            }
         }
 
         /// <summary>
@@ -143,11 +193,14 @@ namespace Hugr.UI
         /// <c>Settings.m_tabKeyHints</c> are hidden when no gamepad is connected, and a clone is
         /// not in that list: it would stay on screen for keyboard players.
         /// </summary>
-        private static void StripGamepadHints(Settings settings, GameObject button)
+        private static void StripGamepadHint(Settings settings, GameObject button)
         {
-            GameObject[] hints = Field<GameObject[]>(settings, "m_tabKeyHints");
+            GameObject[] hints = TryField<GameObject[]>(settings, "m_tabKeyHints");
             if (hints == null)
             {
+                Plugin.Log.LogWarning(
+                    "HUGR-UI-012: Settings.m_tabKeyHints is unreachable, the Hugr tab may show a "
+                    + "leftover gamepad hint.");
                 return;
             }
 
@@ -162,7 +215,7 @@ namespace Hugr.UI
 
             foreach (Transform child in button.GetComponentsInChildren<Transform>(true))
             {
-                if (child != button.transform && names.Contains(child.name))
+                if (child != null && child != button.transform && names.Contains(child.name))
                 {
                     UnityEngine.Object.DestroyImmediate(child.gameObject);
                 }
@@ -197,7 +250,7 @@ namespace Hugr.UI
 
             TMP_Text caption = row.GetComponentInChildren<TMP_Text>(true)
                 ?? throw new HugrException("HUGR-UI-008", "No text component found on " + row.name + ".");
-            Rename(caption, label);
+            caption.text = label;
 
             tab.Add(toggle, entry);
         }
@@ -250,23 +303,8 @@ namespace Hugr.UI
 
             foreach (TMP_Text label in labels)
             {
-                Rename(label, text);
+                label.text = text;
             }
-        }
-
-        private static void Rename(TMP_Text label, string text)
-        {
-            // Valheim rewrites captions from its localization table on enable, which would
-            // overwrite a name that has no translation key.
-            foreach (MonoBehaviour behaviour in label.GetComponents<MonoBehaviour>())
-            {
-                if (behaviour.GetType().Name.IndexOf("Localize", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    UnityEngine.Object.DestroyImmediate(behaviour);
-                }
-            }
-
-            label.text = text;
         }
 
         private static List<int> IndexPath(Transform node, Transform root)
@@ -298,14 +336,19 @@ namespace Hugr.UI
 
         private static T Field<T>(Settings settings, string name) where T : class
         {
+            return TryField<T>(settings, name)
+                ?? throw new HugrException("HUGR-UI-010", "Settings." + name + " is not reachable.");
+        }
+
+        private static T TryField<T>(Settings settings, string name) where T : class
+        {
             try
             {
                 return AccessTools.FieldRefAccess<Settings, T>(name)(settings);
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                throw new HugrException(
-                    "HUGR-UI-010", "Settings." + name + " is not reachable (" + exception.Message + ").");
+                return null;
             }
         }
 
@@ -334,7 +377,7 @@ namespace Hugr.UI
 
             private static float MeasureStep(Transform row, RectTransform rect)
             {
-                float fallback = rect != null ? rect.rect.height + 8f : 54f;
+                float fallback = rect != null && rect.rect.height > 1f ? rect.rect.height + 8f : 54f;
                 if (row.parent == null || rect == null)
                 {
                     return fallback;
