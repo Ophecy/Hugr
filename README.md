@@ -9,8 +9,8 @@ gameplay content. See `Hugr_Specifications_Fonctionnelles.md` and
 
 ## Status
 
-V1 — repair. The plugin loads, its tab lives in the vanilla settings panel, and both repair
-features are in. The recipe toggles are still placeholders: they land with V2.
+V2 — recipe tracker. Repair is done, and a pinned recipe now follows you on screen with live
+resource counts. Multiple pins and the shopping list come with V3.
 
 ## Features
 
@@ -18,10 +18,16 @@ features are in. The recipe toggles are still placeholders: they land with V2.
 | --- | --- |
 | Automatic repair | Repairs every item the station accepts as soon as the crafting panel opens. |
 | Repair everything at once | One press of the vanilla repair button repairs the whole pile. |
+| Pinned recipes | Select a recipe in the crafting panel and press **P**: it stays on screen with what you have and what you still need. Press **P** again on it to unpin. |
+| Shopping list | Placeholder, lands with V3. |
 
-Both call Valheim's own repair routine, so the station rules, the skill gain, the effects and
-the messages are the vanilla ones — only the number of clicks changes. A feature you turn off
-has no patch installed on the game at all.
+Repair calls Valheim's own repair routine, so the station rules, the skill gain, the effects and
+the messages are the vanilla ones — only the number of clicks changes. The tracker clones the
+crafting panel's own requirement widgets, icons included. A feature you turn off has no patch
+installed on the game at all.
+
+The pin key is `PinRecipeKey` in the config file, and the pin itself is stored there too, so it
+survives a restart.
 
 ## Build
 
@@ -60,10 +66,15 @@ Settings are stored in `BepInEx/config/com.ophecy.hugr.cfg` and can also be edit
 5. Damage a few pieces of gear, open a workbench — everything is repaired, the log says how many.
 6. Turn **Automatic repair** off, damage gear again, open the workbench — nothing is repaired;
    one press of the repair button fixes the whole pile.
-7. Join a vanilla server with no Hugr installed — repeat step 5, it still works.
+7. Open a crafting station, select a recipe, press **P** — it appears on the right of the screen
+   with one line per resource, red while you are short.
+8. Close everything and pick up one of those resources — the count climbs on its own.
+9. Quit, relaunch — the recipe is still pinned. Press **P** on it again to unpin.
+10. Join a vanilla server with no Hugr installed — repeat steps 5 and 7, they still work.
 
 If the tab is missing, the log carries a `HUGR-UI-0xx` code naming the step that failed; a
-repair that refuses to run logs a `HUGR-REPAIR-0xx` or `HUGR-PATCH-0xx` code the same way.
+repair or a tracker that refuses to run logs a `HUGR-REPAIR-0xx`, `HUGR-RECIPE-0xx` or
+`HUGR-PATCH-0xx` code the same way.
 
 ## License
 
