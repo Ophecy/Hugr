@@ -5,6 +5,7 @@ using System;
 using HarmonyLib;
 using Hugr.Configuration;
 using Hugr.UI;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -90,42 +91,49 @@ namespace Hugr.Features.Sorting
 
             if (_containerButton == null)
             {
-                // Continues the row of container buttons, one step further along whatever
-                // direction the vanilla ones are laid out in.
                 _containerButton = Clone(template, template.transform.parent, ContainerButtonName);
-                RectTransform rect = _containerButton.transform as RectTransform;
-                RectTransform first = template.transform as RectTransform;
-                RectTransform second = gui.m_stackAllButton == null
-                    ? null
-                    : gui.m_stackAllButton.transform as RectTransform;
-
-                if (rect != null && first != null)
-                {
-                    Vector2 step = second == null
-                        ? new Vector2(first.rect.width + 8f, 0f)
-                        : second.anchoredPosition - first.anchoredPosition;
-                    rect.anchoredPosition = (second == null ? first : second).anchoredPosition + step;
-                }
-
+                Place(_containerButton, gui.m_containerWeight);
                 Wire(_containerButton, () => SortContainer(gui));
             }
 
             if (_playerButton == null && gui.m_player != null)
             {
                 _playerButton = Clone(template, gui.m_player, PlayerButtonName);
-                RectTransform rect = _playerButton.transform as RectTransform;
-                if (rect != null)
-                {
-                    rect.anchorMin = new Vector2(1f, 0f);
-                    rect.anchorMax = new Vector2(1f, 0f);
-                    rect.pivot = new Vector2(1f, 0f);
-                    rect.anchoredPosition = new Vector2(-8f, 8f);
-                }
-
+                Place(_playerButton, gui.m_weight);
                 Wire(_playerButton, SortPlayer);
             }
 
             Plugin.Log.LogInfo("Sort buttons added.");
+        }
+
+        /// <summary>
+        /// Drops the button into the free column the panel's weight badge already occupies, just
+        /// outside the right edge, and takes the middle of that edge — clear of the weight badge
+        /// pinned to the bottom and of the armor badge above it.
+        /// </summary>
+        /// <remarks>
+        /// The badge is a sibling of the button, so its anchoring transfers as read, and it is
+        /// the panel itself that says how far out and how wide that column is. Inside the panel
+        /// there is no room: the grids fill them, and the container's two buttons already take
+        /// its top row.
+        /// </remarks>
+        private static void Place(Button button, TMP_Text weight)
+        {
+            RectTransform badge = weight == null ? null : weight.transform.parent as RectTransform;
+            if (badge == null)
+            {
+                throw new HugrException(
+                    "HUGR-SORT-006", "The panel has no weight badge to line the sort button up with.");
+            }
+
+            RectTransform rect = (RectTransform)button.transform;
+            float height = rect.rect.height;
+
+            rect.anchorMin = new Vector2(badge.anchorMin.x, 0.5f);
+            rect.anchorMax = new Vector2(badge.anchorMax.x, 0.5f);
+            rect.pivot = new Vector2(badge.pivot.x, 0.5f);
+            rect.sizeDelta = new Vector2(badge.rect.width, height);
+            rect.anchoredPosition = new Vector2(badge.anchoredPosition.x, 0f);
         }
 
         private static Button Clone(Button template, Transform parent, string name)
@@ -133,6 +141,7 @@ namespace Hugr.Features.Sorting
             Button button = UnityEngine.Object.Instantiate(template, parent);
             button.gameObject.name = name;
             button.gameObject.SetActive(true);
+            Widgets.StripGamepadHints(button.gameObject);
             Widgets.StripScripts(button.gameObject);
             Widgets.SetLabel(button.gameObject, "Sort", "HUGR-SORT-004");
             return button;

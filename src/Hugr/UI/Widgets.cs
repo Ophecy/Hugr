@@ -55,6 +55,23 @@ namespace Hugr.UI
         }
 
         /// <summary>
+        /// Drops the gamepad glyph a cloned widget carries. The vanilla button hides it through
+        /// its <see cref="UIGamePad"/> component, which <see cref="StripScripts"/> takes away:
+        /// left alone, the glyph stays lit on a clone for a player who holds no controller.
+        /// Call this before stripping, while the component still names its own hint.
+        /// </summary>
+        internal static void StripGamepadHints(GameObject clone)
+        {
+            foreach (UIGamePad pad in clone.GetComponentsInChildren<UIGamePad>(true))
+            {
+                if (pad != null && pad.m_hint != null)
+                {
+                    UnityEngine.Object.DestroyImmediate(pad.m_hint);
+                }
+            }
+        }
+
+        /// <summary>
         /// Renames every caption of a widget. Valheim keeps a second copy of a tab button's label
         /// inside its "Selected" child, and that one is the only one visible once the tab is open.
         /// </summary>
