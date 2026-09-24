@@ -33,6 +33,8 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> Compass { get; private set; }
 
+        internal static ConfigEntry<bool> InventorySearch { get; private set; }
+
         internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
 
         /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
@@ -97,6 +99,10 @@ namespace Hugr.Configuration
             Compass = config.Bind(
                 "Hud", "Compass", true,
                 "Show a compass strip at the top of the screen.");
+
+            InventorySearch = config.Bind(
+                "Inventory", "InventorySearch", true,
+                "Add a search field that greys out the items not matching it, in the inventory and open containers.");
 
             PinRecipeKey = config.Bind(
                 "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),

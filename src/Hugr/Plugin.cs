@@ -9,6 +9,7 @@ using Hugr.Configuration;
 using Hugr.Features.Navigation;
 using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
+using Hugr.Features.Search;
 using Hugr.Features.Servers;
 using Hugr.Features.Sorting;
 using Hugr.UI;
@@ -43,6 +44,7 @@ namespace Hugr
             Bind(ServerPasswords.Bind);
             Bind(HudClock.Bind);
             Bind(HudCompass.Bind);
+            Bind(InventorySearch.Bind);
 
             Logger.LogInfo("Hugr loaded.");
         }
@@ -74,6 +76,7 @@ namespace Hugr
             SortButtons.Remove();
             HudClock.Remove();
             HudCompass.Remove();
+            InventorySearch.Remove();
         }
     }
 }

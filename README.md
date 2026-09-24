@@ -24,6 +24,7 @@ resource counts. Multiple pins and the shopping list come with V3.
 | Remember server passwords | The first time you join a password-protected server, the password you type is kept once the server accepts it; next time Hugr types it for you. If the server refuses a remembered password, Hugr forgets it and joins again so you are asked. Passwords sit in plain text in `BepInEx/config/com.ophecy.hugr.cfg`, under `[ServerPasswords]`. |
 | Clock | The day and the time of day under the minimap, on the sun's scale: 06:00 is sunrise, 18:00 sunset. |
 | Compass | A strip across the top of the screen with the eight directions, in the game's language. |
+| Inventory search | A search field above the inventory: items of the inventory and of the open container that do not match are greyed out. The field empties when the inventory closes. |
 
 Repair calls Valheim's own repair routine, so the station rules, the skill gain, the effects and
 the messages are the vanilla ones — only the number of clicks changes. The tracker clones the
