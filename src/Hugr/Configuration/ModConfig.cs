@@ -27,13 +27,41 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> SortButton { get; private set; }
 
+        internal static ConfigEntry<bool> ServerPasswords { get; private set; }
+
         internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
 
         /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
         internal static ConfigEntry<string> PinnedRecipe { get; private set; }
 
+        private static ConfigFile _config;
+
+        /// <summary>
+        /// Remembered password of a server, keyed by <c>ZNet.GetServerString(true)</c>; empty when
+        /// none is known. Bound on first use, since the servers are only known at join time.
+        /// </summary>
+        internal static ConfigEntry<string> ServerPassword(string server)
+        {
+            return _config.Bind(
+                "ServerPasswords", SanitizeKey(server), string.Empty,
+                "Password of this server, stored in plain text. Empty the value to forget it.");
+        }
+
+        /// <summary>BepInEx refuses these characters in a key; IPv6 hosts carry brackets.</summary>
+        private static string SanitizeKey(string key)
+        {
+            foreach (char invalid in new[] { '=', '\n', '\t', '\\', '"', '\'', '[', ']' })
+            {
+                key = key.Replace(invalid, '_');
+            }
+
+            return key.Trim();
+        }
+
         internal static void Bind(ConfigFile config)
         {
+            _config = config;
+
             AutoRepair = config.Bind(
                 "Repair", "AutoRepair", true,
                 "Repair every compatible item when a crafting station is opened.");
@@ -53,6 +81,10 @@ namespace Hugr.Configuration
             SortButton = config.Bind(
                 "Inventory", "SortButton", true,
                 "Add a Sort button to the inventory and to open containers.");
+
+            ServerPasswords = config.Bind(
+                "Servers", "ServerPasswords", true,
+                "Remember the password of every server joined and type it in on the next join.");
 
             PinRecipeKey = config.Bind(
                 "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),

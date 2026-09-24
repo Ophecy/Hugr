@@ -8,6 +8,7 @@ using HarmonyLib;
 using Hugr.Configuration;
 using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
+using Hugr.Features.Servers;
 using Hugr.Features.Sorting;
 using Hugr.UI;
 
@@ -38,6 +39,7 @@ namespace Hugr
             Bind(RepairAll.Bind);
             Bind(RecipePinning.Bind);
             Bind(SortButtons.Bind);
+            Bind(ServerPasswords.Bind);
 
             Logger.LogInfo("Hugr loaded.");
         }

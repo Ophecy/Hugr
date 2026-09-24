@@ -89,6 +89,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.RecipeTracker, "Pinned recipes");
             AddRow(row, tab, ModConfig.ShoppingList, "Shopping list");
             AddRow(row, tab, ModConfig.SortButton, "Sort button");
+            AddRow(row, tab, ModConfig.ServerPasswords, "Remember server passwords");
 
             Button button = BuildTabButton(settings, tabs[0], clones);
 
