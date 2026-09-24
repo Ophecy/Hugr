@@ -29,6 +29,8 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> ServerPasswords { get; private set; }
 
+        internal static ConfigEntry<bool> Clock { get; private set; }
+
         internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
 
         /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
@@ -85,6 +87,10 @@ namespace Hugr.Configuration
             ServerPasswords = config.Bind(
                 "Servers", "ServerPasswords", true,
                 "Remember the password of every server joined and type it in on the next join.");
+
+            Clock = config.Bind(
+                "Hud", "Clock", true,
+                "Show the day and the time of day under the minimap.");
 
             PinRecipeKey = config.Bind(
                 "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),

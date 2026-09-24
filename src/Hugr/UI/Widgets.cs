@@ -55,6 +55,33 @@ namespace Hugr.UI
         }
 
         /// <summary>
+        /// Clones a vanilla label, font, outline and all, as a bare text under
+        /// <paramref name="parent"/>. Animators go too: they are not <see cref="MonoBehaviour"/>s,
+        /// so <see cref="StripScripts"/> keeps them, and the minimap's biome label would otherwise
+        /// pulse our text whenever the player changes biome. The template must carry a
+        /// <see cref="TMP_Text"/> on its own object.
+        /// </summary>
+        internal static TMP_Text CloneText(TMP_Text template, Transform parent, string name)
+        {
+            GameObject clone = UnityEngine.Object.Instantiate(template.gameObject, parent, false);
+            clone.name = name;
+            foreach (Animator animator in clone.GetComponentsInChildren<Animator>(true))
+            {
+                UnityEngine.Object.DestroyImmediate(animator);
+            }
+
+            StripScripts(clone);
+            clone.SetActive(true);
+            clone.transform.localScale = Vector3.one;
+
+            // The animator may have been caught mid-pulse: the clone keeps whatever it froze.
+            TMP_Text text = clone.GetComponent<TMP_Text>();
+            text.alpha = 1f;
+            text.enableAutoSizing = false;
+            return text;
+        }
+
+        /// <summary>
         /// Drops the gamepad glyph a cloned widget carries. The vanilla button hides it through
         /// its <see cref="UIGamePad"/> component, which <see cref="StripScripts"/> takes away:
         /// left alone, the glyph stays lit on a clone for a player who holds no controller.

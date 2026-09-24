@@ -6,6 +6,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using Hugr.Configuration;
+using Hugr.Features.Navigation;
 using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
 using Hugr.Features.Servers;
@@ -40,6 +41,7 @@ namespace Hugr
             Bind(RecipePinning.Bind);
             Bind(SortButtons.Bind);
             Bind(ServerPasswords.Bind);
+            Bind(HudClock.Bind);
 
             Logger.LogInfo("Hugr loaded.");
         }
@@ -69,6 +71,7 @@ namespace Hugr
             _harmony.UnpatchSelf();
             RecipeTrackerHud.Remove();
             SortButtons.Remove();
+            HudClock.Remove();
         }
     }
 }
