@@ -18,13 +18,26 @@
     <BepInExCore>$(VALHEIM_INSTALL)\BepInEx\core</BepInExCore>
   </PropertyGroup>
 
+  <!--
+    Private members of the game are reached in typed C# rather than through reflection: the
+    publicizer rewrites assembly_valheim at build time, from the install, and Mono accepts the
+    calls once unsafe blocks are allowed. A renamed member then breaks the build, not the game.
+  -->
+  <PropertyGroup>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="BepInEx.AssemblyPublicizer.MSBuild" Version="0.4.3" PrivateAssets="all" />
+  </ItemGroup>
+
   <Target Name="CheckValheimInstall" BeforeTargets="BeforeBuild"
           Condition="!Exists('$(ValheimManaged)') OR !Exists('$(BepInExCore)')">
     <Error Text="VALHEIM_INSTALL must point at the Valheim folder containing valheim.exe, with BepInEx installed. Current value: '$(VALHEIM_INSTALL)'. See README.md." />
   </Target>
 
   <ItemGroup>
-    <Reference Include="assembly_valheim" HintPath="$(ValheimManaged)\assembly_valheim.dll" Private="false" />
+    <Reference Include="assembly_valheim" HintPath="$(ValheimManaged)\assembly_valheim.dll" Private="false" Publicize="true" />
     <Reference Include="assembly_utils" HintPath="$(ValheimManaged)\assembly_utils.dll" Private="false" />
     <Reference Include="assembly_guiutils" HintPath="$(ValheimManaged)\assembly_guiutils.dll" Private="false" />
     <Reference Include="UnityEngine" HintPath="$(ValheimManaged)\UnityEngine.dll" Private="false" />
