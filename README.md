@@ -23,6 +23,7 @@ resource counts. Multiple pins and the shopping list come with V3.
 | Sort button | A **Sort** button on the inventory and on any open container: partial stacks are merged, then items are grouped by kind and name. The hotbar row keeps its slots — its stacks are still topped up. |
 | Remember server passwords | The first time you join a password-protected server, the password you type is kept once the server accepts it; next time Hugr types it for you. If the server refuses a remembered password, Hugr forgets it and joins again so you are asked. Passwords sit in plain text in `BepInEx/config/com.ophecy.hugr.cfg`, under `[ServerPasswords]`. |
 | Clock | The day and the time of day under the minimap, on the sun's scale: 06:00 is sunrise, 18:00 sunset. |
+| Compass | A strip across the top of the screen with the eight directions, in the game's language. |
 
 Repair calls Valheim's own repair routine, so the station rules, the skill gain, the effects and
 the messages are the vanilla ones — only the number of clicks changes. The tracker clones the

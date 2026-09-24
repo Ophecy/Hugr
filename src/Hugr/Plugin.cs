@@ -42,6 +42,7 @@ namespace Hugr
             Bind(SortButtons.Bind);
             Bind(ServerPasswords.Bind);
             Bind(HudClock.Bind);
+            Bind(HudCompass.Bind);
 
             Logger.LogInfo("Hugr loaded.");
         }
@@ -72,6 +73,7 @@ namespace Hugr
             RecipeTrackerHud.Remove();
             SortButtons.Remove();
             HudClock.Remove();
+            HudCompass.Remove();
         }
     }
 }
