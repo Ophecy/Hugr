@@ -1,6 +1,7 @@
 // Copyright (C) 2026 Ophecy
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System.Linq;
 using System.Reflection;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -14,38 +15,59 @@ namespace Hugr.Features
     /// </summary>
     internal static class FeatureSwitch
     {
-        internal static void Bind(Harmony harmony, ConfigEntry<bool> entry, MethodBase target, MethodInfo postfix)
+        /// <summary>
+        /// Keeps <paramref name="patch"/> on <paramref name="target"/> while the entry is on: as a
+        /// postfix, or as a prefix when <paramref name="prefix"/> is set.
+        /// </summary>
+        internal static void Bind(
+            Harmony harmony, ConfigEntry<bool> entry, MethodBase target, MethodInfo patch, bool prefix = false)
         {
+            BindAny(harmony, new[] { entry }, target, patch, prefix);
+        }
+
+        /// <summary>
+        /// Keeps <paramref name="patch"/> on <paramref name="target"/> while any of the entries is
+        /// on: for a patch that several features share, installed once whichever of them needs it.
+        /// </summary>
+        internal static void BindAny(
+            Harmony harmony, ConfigEntry<bool>[] entries, MethodBase target, MethodInfo patch, bool prefix = false)
+        {
+            string keys = string.Join("/", entries.Select(entry => entry.Definition.Key));
             if (target == null)
             {
                 throw new HugrException(
-                    "HUGR-PATCH-001", "Patch target of " + entry.Definition.Key + " no longer exists in the game.");
+                    "HUGR-PATCH-001", "Patch target of " + keys + " no longer exists in the game.");
             }
 
             bool applied = false;
 
             void Sync()
             {
-                if (entry.Value == applied)
+                bool wanted = entries.Any(entry => entry.Value);
+                if (wanted == applied)
                 {
                     return;
                 }
 
-                if (entry.Value)
+                if (wanted)
                 {
-                    harmony.Patch(target, postfix: new HarmonyMethod(postfix));
+                    HarmonyMethod method = new HarmonyMethod(patch);
+                    harmony.Patch(target, prefix: prefix ? method : null, postfix: prefix ? null : method);
                 }
                 else
                 {
-                    harmony.Unpatch(target, postfix);
+                    harmony.Unpatch(target, patch);
                 }
 
-                applied = entry.Value;
-                Plugin.Log.LogInfo(entry.Definition.Key + (applied ? " enabled." : " disabled."));
+                applied = wanted;
+                Plugin.Log.LogInfo(keys + (applied ? " enabled." : " disabled."));
             }
 
             Sync();
-            entry.SettingChanged += (sender, args) => Sync();
+            foreach (ConfigEntry<bool> entry in entries)
+            {
+                entry.SettingChanged += (sender, args) => Sync();
+            }
         }
     }
 }

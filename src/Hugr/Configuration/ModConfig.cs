@@ -37,6 +37,12 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> InventorySearch { get; private set; }
 
+        internal static ConfigEntry<bool> QuickStack { get; private set; }
+
+        internal static ConfigEntry<KeyboardShortcut> QuickStackKey { get; private set; }
+
+        internal static ConfigEntry<float> QuickStackRange { get; private set; }
+
         internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
 
         /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
@@ -109,6 +115,20 @@ namespace Hugr.Configuration
             InventorySearch = config.Bind(
                 "Inventory", "InventorySearch", true,
                 "Add a search field that greys out the items not matching it, in the inventory and open containers.");
+
+            QuickStack = config.Bind(
+                "Inventory", "QuickStack", true,
+                "On a key press, store in every chest in range the items that chest already holds.");
+
+            QuickStackKey = config.Bind(
+                "Inventory", "QuickStackKey", new KeyboardShortcut(KeyCode.G),
+                "Stores the carried items into the nearby chests that already hold them.");
+
+            QuickStackRange = config.Bind(
+                "Inventory", "QuickStackRange", 10f,
+                new ConfigDescription(
+                    "Distance, in metres, within which chests take part in a quick stack.",
+                    new AcceptableValueRange<float>(1f, 30f)));
 
             PinRecipeKey = config.Bind(
                 "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),

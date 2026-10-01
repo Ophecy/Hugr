@@ -89,6 +89,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.RecipeTracker, "Pinned recipes");
             AddRow(row, tab, ModConfig.ShoppingList, "Shopping list");
             AddRow(row, tab, ModConfig.SortButton, "Sort button");
+            AddRow(row, tab, ModConfig.QuickStack, "Quick stack to nearby chests");
             AddRow(row, tab, ModConfig.ServerPasswords, "Remember server passwords");
             AddRow(row, tab, ModConfig.Clock, "Clock");
             AddRow(row, tab, ModConfig.Compass, "Compass");

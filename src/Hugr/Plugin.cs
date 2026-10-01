@@ -6,6 +6,7 @@ using BepInEx;
 using BepInEx.Logging;
 using HarmonyLib;
 using Hugr.Configuration;
+using Hugr.Features;
 using Hugr.Features.Navigation;
 using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
@@ -53,6 +54,8 @@ namespace Hugr
             Bind(RepairAll.Bind);
             Bind(RecipePinning.Bind);
             Bind(SortButtons.Bind);
+            Bind(harmony => ContainerClaims.Bind(harmony, ModConfig.QuickStack));
+            Bind(QuickStack.Bind);
             Bind(ServerPasswords.Bind);
             Bind(HudClock.Bind);
             Bind(HudCompass.Bind);
