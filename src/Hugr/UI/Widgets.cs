@@ -72,11 +72,11 @@ namespace Hugr.UI
 
             StripScripts(clone);
             clone.SetActive(true);
+
+            // The pulse scales the label up to 1.4: a clone taken mid-pulse would keep that size.
             clone.transform.localScale = Vector3.one;
 
-            // The animator may have been caught mid-pulse: the clone keeps whatever it froze.
             TMP_Text text = clone.GetComponent<TMP_Text>();
-            text.alpha = 1f;
             text.enableAutoSizing = false;
             return text;
         }
