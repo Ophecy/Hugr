@@ -31,6 +31,18 @@ namespace Hugr
 
         internal static ManualLogSource Log { get; private set; }
 
+        /// <summary>
+        /// Logs only while the debug mode is on, at info level: BepInEx filters the debug level out
+        /// of its console and its log file by default.
+        /// </summary>
+        internal static void Trace(string message)
+        {
+            if (ModConfig.DebugMode.Value)
+            {
+                Log.LogInfo("[debug] " + message);
+            }
+        }
+
         private void Awake()
         {
             Log = Logger;

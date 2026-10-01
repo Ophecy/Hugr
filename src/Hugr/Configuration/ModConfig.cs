@@ -17,6 +17,8 @@ namespace Hugr.Configuration
     /// </remarks>
     internal static class ModConfig
     {
+        internal static ConfigEntry<bool> DebugMode { get; private set; }
+
         internal static ConfigEntry<bool> AutoRepair { get; private set; }
 
         internal static ConfigEntry<bool> RepairAll { get; private set; }
@@ -67,6 +69,10 @@ namespace Hugr.Configuration
         internal static void Bind(ConfigFile config)
         {
             _config = config;
+
+            DebugMode = config.Bind(
+                "General", "DebugMode", false,
+                "Write diagnostic lines, prefixed [debug], to the BepInEx log: timings, chests found, resources moved.");
 
             AutoRepair = config.Bind(
                 "Repair", "AutoRepair", true,

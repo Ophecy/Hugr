@@ -83,6 +83,8 @@ Open Valheim's **Settings** panel, from the main menu or in game: Hugr adds its 
 next to the vanilla ones. **OK** saves, **Back** discards, exactly like the other tabs.
 
 Settings are stored in `BepInEx/config/ophecy.Hugr.cfg` and can also be edited there.
+Turn on **Debug mode** (`DebugMode`) to get `[debug]` lines in the BepInEx log — timings, chests
+found, resources moved — when reporting a problem.
 
 ## Verifying V1
 

@@ -93,6 +93,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.Clock, "Clock");
             AddRow(row, tab, ModConfig.Compass, "Compass");
             AddRow(row, tab, ModConfig.InventorySearch, "Inventory search");
+            AddRow(row, tab, ModConfig.DebugMode, "Debug mode (log)");
             AddVersion(row);
 
             Button button = BuildTabButton(settings, tabs[0], clones);
