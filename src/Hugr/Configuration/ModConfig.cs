@@ -29,6 +29,8 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> SortButton { get; private set; }
 
+        internal static ConfigEntry<bool> SortBaseSlotsOnly { get; private set; }
+
         internal static ConfigEntry<bool> ServerPasswords { get; private set; }
 
         internal static ConfigEntry<bool> Clock { get; private set; }
@@ -103,6 +105,10 @@ namespace Hugr.Configuration
             SortButton = config.Bind(
                 "Inventory", "SortButton", true,
                 "Add a Sort button to the inventory and to open containers.");
+
+            SortBaseSlotsOnly = config.Bind(
+                "Inventory", "SortBaseSlotsOnly", true,
+                "Sort only the four vanilla rows of the player inventory, leaving the rows other mods add untouched.");
 
             ServerPasswords = config.Bind(
                 "Servers", "ServerPasswords", true,

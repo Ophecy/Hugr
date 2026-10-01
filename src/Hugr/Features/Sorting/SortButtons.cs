@@ -21,6 +21,12 @@ namespace Hugr.Features.Sorting
         private const string PlayerButtonName = "HugrSortPlayer";
         private const string ContainerButtonName = "HugrSortContainer";
 
+        /// <summary>
+        /// Rows of the vanilla player inventory (<c>Humanoid</c> builds it 8 × 4); the rows a mod
+        /// appends below them — equipment or quick slots — are its own business.
+        /// </summary>
+        private const int BaseRows = 4;
+
         private static AccessTools.FieldRef<InventoryGui, Container> _currentContainer;
         private static Button _playerButton;
         private static Button _containerButton;
@@ -108,7 +114,7 @@ namespace Hugr.Features.Sorting
 
         /// <summary>
         /// Drops the button into the free column the panel's weight badge already occupies, just
-        /// outside the right edge, and takes the middle of that edge — clear of the weight badge
+        /// outside the right edge, one button height below the middle of that edge — clear of the weight badge
         /// pinned to the bottom and of the armor badge above it.
         /// </summary>
         /// <remarks>
@@ -133,7 +139,7 @@ namespace Hugr.Features.Sorting
             rect.anchorMax = new Vector2(badge.anchorMax.x, 0.5f);
             rect.pivot = new Vector2(badge.pivot.x, 0.5f);
             rect.sizeDelta = new Vector2(badge.rect.width, height);
-            rect.anchoredPosition = new Vector2(badge.anchoredPosition.x, 0f);
+            rect.anchoredPosition = new Vector2(badge.anchoredPosition.x, -height);
         }
 
         private static Button Clone(Button template, Transform parent, string name)
@@ -172,7 +178,9 @@ namespace Hugr.Features.Sorting
             }
 
             // Row zero is the hotbar: its stacks are topped up, its slots never move.
-            Report(player, InventorySorter.Sort(player.GetInventory(), 1));
+            Inventory inventory = player.GetInventory();
+            int rows = ModConfig.SortBaseSlotsOnly.Value ? BaseRows : inventory.GetHeight();
+            Report(player, InventorySorter.Sort(inventory, 1, rows));
         }
 
         private static void SortContainer(InventoryGui gui)
@@ -183,7 +191,8 @@ namespace Hugr.Features.Sorting
                 return;
             }
 
-            Report(Player.m_localPlayer, InventorySorter.Sort(container.GetInventory(), 0));
+            Inventory inventory = container.GetInventory();
+            Report(Player.m_localPlayer, InventorySorter.Sort(inventory, 0, inventory.GetHeight()));
         }
 
         private static void Report(Player player, int freed)

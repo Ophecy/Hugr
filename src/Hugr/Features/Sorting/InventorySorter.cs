@@ -34,13 +34,14 @@ namespace Hugr.Features.Sorting
         /// Sorts an inventory and returns how many slots that freed. The first
         /// <paramref name="keptRows"/> rows stay where they are — that is the hotbar, and a sort
         /// button that shuffles it is a sort button nobody presses twice. Their stacks are still
-        /// topped up from the rest.
+        /// topped up from the rest. Rows from <paramref name="rows"/> down are left alone
+        /// altogether: neither merged nor moved.
         /// </summary>
-        internal static int Sort(Inventory inventory, int keptRows)
+        internal static int Sort(Inventory inventory, int keptRows, int rows)
         {
             List<ItemDrop.ItemData> items = inventory.GetAllItems();
-            int freed = MergeStacks(items);
-            Arrange(inventory, items, keptRows);
+            int freed = MergeStacks(items, rows);
+            Arrange(inventory, items, keptRows, rows);
             _changed.Invoke(inventory, new object[] { false, false });
             return freed;
         }
@@ -49,9 +50,9 @@ namespace Hugr.Features.Sorting
         /// Pours every partial stack into the ones before it, walking the grid from the top left,
         /// so the hotbar fills first.
         /// </summary>
-        private static int MergeStacks(List<ItemDrop.ItemData> items)
+        private static int MergeStacks(List<ItemDrop.ItemData> items, int rows)
         {
-            List<ItemDrop.ItemData> ordered = new List<ItemDrop.ItemData>(items);
+            List<ItemDrop.ItemData> ordered = items.FindAll(item => item.m_gridPos.y < rows);
             ordered.Sort(ByGridPosition);
 
             int freed = 0;
@@ -94,12 +95,12 @@ namespace Hugr.Features.Sorting
             return freed;
         }
 
-        private static void Arrange(Inventory inventory, List<ItemDrop.ItemData> items, int keptRows)
+        private static void Arrange(Inventory inventory, List<ItemDrop.ItemData> items, int keptRows, int rows)
         {
             List<ItemDrop.ItemData> movable = new List<ItemDrop.ItemData>();
             foreach (ItemDrop.ItemData item in items)
             {
-                if (item.m_gridPos.y >= keptRows)
+                if (item.m_gridPos.y >= keptRows && item.m_gridPos.y < rows)
                 {
                     movable.Add(item);
                 }
@@ -108,7 +109,7 @@ namespace Hugr.Features.Sorting
             movable.Sort(ByKind);
 
             int width = inventory.GetWidth();
-            int height = inventory.GetHeight();
+            int height = Math.Min(rows, inventory.GetHeight());
             int next = 0;
 
             for (int y = keptRows; y < height && next < movable.Count; y++)
