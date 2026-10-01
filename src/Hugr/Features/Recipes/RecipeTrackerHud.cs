@@ -163,7 +163,8 @@ namespace Hugr.Features.Recipes
             float offset = rowHeight + 4f;
             foreach (Piece.Requirement requirement in recipe.m_resources)
             {
-                if (requirement == null || requirement.m_resItem == null || requirement.GetAmount(1) <= 0)
+                if (requirement == null || requirement.m_resItem == null || requirement.m_upgraderResource
+                    || requirement.GetAmount(1) <= 0)
                 {
                     continue;
                 }
