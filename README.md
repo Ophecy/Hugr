@@ -22,6 +22,7 @@ resource counts. Multiple pins and the shopping list come with V3.
 | Shopping list | Placeholder, lands with V3. |
 | Sort button | A **Sort** button on the inventory and on any open container: partial stacks are merged, then items are grouped by kind and name. The hotbar row keeps its slots — its stacks are still topped up. |
 | Quick stack to nearby chests | Press **G**: every chest within 10 m takes from your inventory the items it already holds, through the chest's own vanilla "stack all". Equipped items stay; chests in use, someone else's private chests, chests behind someone else's ward and dungeon chests are skipped. Key and range are `QuickStackKey` and `QuickStackRange` in the config file. |
+| Craft and build from nearby chests | Chests, carts and ships within 15 m of you, or of a crafting station whose range covers you, count in the crafting panel and the build menu. When you craft or place a piece, only what your inventory lacks is moved into it from those chests, then the game crafts or builds as usual. If a chest belongs to another player's client, the craft waits for it and the placement is replayed once the resources arrive. Range is `CraftFromContainersRange` in the config file. |
 | Remember server passwords | The first time you join a password-protected server, the password you type is kept once the server accepts it; next time Hugr types it for you. If the server refuses a remembered password, Hugr forgets it and joins again so you are asked. Passwords sit in plain text in `BepInEx/config/ophecy.Hugr.cfg`, under `[ServerPasswords]`. |
 | Clock | The day and the time of day under the minimap, on the sun's scale: 06:00 is sunrise, 18:00 sunset. |
 | Compass | A strip across the top of the screen with the eight directions, in the game's language. |
@@ -104,7 +105,10 @@ found, resources moved — when reporting a problem.
     message says how many slots that freed. Do the same on your inventory: row one is untouched.
 11. Put some wood in a chest, walk away from it with more wood and some stone, press **G** within
     10 m — the wood goes into the chest, the stone stays with you.
-12. Join a vanilla server with no Hugr installed — repeat steps 5, 7, 10 and 11, they still work.
+12. Empty your inventory of wood into a chest near a workbench, then craft a club and place a
+    wood wall — the wood is taken from the chest, only what each one costs.
+13. Join a vanilla server with no Hugr installed — repeat steps 5, 7, 10, 11 and 12, they still
+    work.
 
 If the tab is missing, the log carries a `HUGR-UI-0xx` code naming the step that failed; a
 repair or a tracker that refuses to run logs a `HUGR-REPAIR-0xx`, `HUGR-RECIPE-0xx` or

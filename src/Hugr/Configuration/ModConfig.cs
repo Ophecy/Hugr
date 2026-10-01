@@ -43,6 +43,10 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<float> QuickStackRange { get; private set; }
 
+        internal static ConfigEntry<bool> CraftFromContainers { get; private set; }
+
+        internal static ConfigEntry<float> CraftFromContainersRange { get; private set; }
+
         internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
 
         /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
@@ -129,6 +133,16 @@ namespace Hugr.Configuration
                 new ConfigDescription(
                     "Distance, in metres, within which chests take part in a quick stack.",
                     new AcceptableValueRange<float>(1f, 30f)));
+
+            CraftFromContainers = config.Bind(
+                "Crafting", "CraftFromContainers", true,
+                "Craft and build with the resources of the chests, carts and ships nearby: what the inventory lacks is fetched from them.");
+
+            CraftFromContainersRange = config.Bind(
+                "Crafting", "CraftFromContainersRange", 15f,
+                new ConfigDescription(
+                    "Distance, in metres, from the player or from a crafting station in range, within which chests lend their resources.",
+                    new AcceptableValueRange<float>(1f, 50f)));
 
             PinRecipeKey = config.Bind(
                 "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),
