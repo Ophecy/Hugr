@@ -4,7 +4,7 @@
     <TargetFramework>net48</TargetFramework>
     <AssemblyName>Hugr</AssemblyName>
     <RootNamespace>Hugr</RootNamespace>
-    <Version>0.1.0</Version>
+    <Version>1.1.0</Version>
     <LangVersion>latest</LangVersion>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
@@ -49,6 +49,43 @@
     <Reference Include="BepInEx" HintPath="$(BepInExCore)\BepInEx.dll" Private="false" />
     <Reference Include="0Harmony" HintPath="$(BepInExCore)\0Harmony.dll" Private="false" />
   </ItemGroup>
+
+  <!--
+    <Version> above is the only place the version is written: this target turns it into
+    BuildInfo.Version (X.Y.Z, what BepInPlugin needs: it parses it as a System.Version) and
+    BuildInfo.DisplayVersion, shown in the settings tab and the log. A Debug build displays
+    X.Y.Z-dev_N, where N counts the builds of this checkout in build.number (local, untracked).
+  -->
+  <Target Name="GenerateBuildInfo" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <BuildNumberFile>$(MSBuildProjectDirectory)\build.number</BuildNumberFile>
+      <BuildInfoFile>$(IntermediateOutputPath)BuildInfo.g.cs</BuildInfoFile>
+    </PropertyGroup>
+    <ReadLinesFromFile File="$(BuildNumberFile)" Condition="Exists('$(BuildNumberFile)')">
+      <Output TaskParameter="Lines" PropertyName="LastBuildNumber" />
+    </ReadLinesFromFile>
+    <PropertyGroup>
+      <LastBuildNumber Condition="'$(LastBuildNumber)' == ''">0</LastBuildNumber>
+      <BuildNumber>$(LastBuildNumber)</BuildNumber>
+      <BuildNumber Condition="'$(DesignTimeBuild)' != 'true'">$([MSBuild]::Add($(LastBuildNumber), 1))</BuildNumber>
+      <DisplayVersion>$(Version)</DisplayVersion>
+      <DisplayVersion Condition="'$(Configuration)' == 'Debug'">$(Version)-dev_$(BuildNumber)</DisplayVersion>
+    </PropertyGroup>
+    <WriteLinesToFile
+      File="$(BuildNumberFile)"
+      Lines="$(BuildNumber)"
+      Overwrite="true"
+      Condition="'$(DesignTimeBuild)' != 'true'" />
+    <WriteLinesToFile
+      File="$(BuildInfoFile)"
+      Lines="namespace Hugr { internal static class BuildInfo { internal const string Version = &quot;$(Version)&quot;%3B internal const string DisplayVersion = &quot;$(DisplayVersion)&quot;%3B } }"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(BuildInfoFile)" />
+      <FileWrites Include="$(BuildInfoFile)" />
+    </ItemGroup>
+  </Target>
 
   <!--
     Debug builds land in the game. With -p:HotReload=true they go to BepInEx\scripts instead,

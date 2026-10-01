@@ -93,6 +93,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.Clock, "Clock");
             AddRow(row, tab, ModConfig.Compass, "Compass");
             AddRow(row, tab, ModConfig.InventorySearch, "Inventory search");
+            AddVersion(row);
 
             Button button = BuildTabButton(settings, tabs[0], clones);
 
@@ -214,6 +215,17 @@ namespace Hugr.UI
         {
             GameObject row = UnityEngine.Object.Instantiate(row0.gameObject, row0.parent);
             SetUpRow(row, tab, entry, label);
+        }
+
+        /// <summary>Ends the page with the plugin version, in the caption style of the rows.</summary>
+        private static void AddVersion(Transform row0)
+        {
+            TMP_Text caption = row0.GetComponentInChildren<TMP_Text>(true)
+                ?? throw new HugrException(
+                    "HUGR-UI-015", "The row template has no caption to style the version with.");
+
+            TMP_Text version = Widgets.CloneText(caption, row0.parent, "HugrVersion");
+            version.text = Plugin.PluginName + " " + BuildInfo.DisplayVersion;
         }
 
         private static void SetUpRow(GameObject row, HugrSettingsTab tab, ConfigEntry<bool> entry, string label)

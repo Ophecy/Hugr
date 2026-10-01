@@ -23,9 +23,9 @@ namespace Hugr
     [BepInPlugin(PluginGuid, PluginName, PluginVersion)]
     public class Plugin : BaseUnityPlugin
     {
-        public const string PluginGuid = "com.ophecy.hugr";
+        public const string PluginGuid = "ophecy.Hugr";
         public const string PluginName = "Hugr";
-        public const string PluginVersion = "0.1.0";
+        public const string PluginVersion = BuildInfo.Version;
 
         private readonly Harmony _harmony = new Harmony(PluginGuid);
 
@@ -46,7 +46,7 @@ namespace Hugr
             Bind(HudCompass.Bind);
             Bind(InventorySearch.Bind);
 
-            Logger.LogInfo("Hugr loaded.");
+            Logger.LogInfo("Hugr " + BuildInfo.DisplayVersion + " loaded.");
         }
 
         private void Bind(Action<Harmony> feature)

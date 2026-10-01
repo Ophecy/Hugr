@@ -3,6 +3,9 @@ bin/
 obj/
 *.user
 
+# Local build counter, shown as X.Y.Z-dev_N in Debug builds
+build.number
+
 # Game and BepInEx assemblies are never versioned: referenced in place via VALHEIM_INSTALL
 
 # IDE
