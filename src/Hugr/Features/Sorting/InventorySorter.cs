@@ -27,7 +27,7 @@ namespace Hugr.Features.Sorting
         {
             _changed = AccessTools.Method(typeof(Inventory), "Changed")
                 ?? throw new HugrException(
-                    "HUGR-SORT-001", "Inventory no longer exposes the change notification.");
+                    ErrorCodes.SortChangeNotificationMissing, "Inventory no longer exposes the change notification.");
         }
 
         /// <summary>

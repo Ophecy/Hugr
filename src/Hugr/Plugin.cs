@@ -46,6 +46,22 @@ namespace Hugr
             }
         }
 
+        /// <summary>
+        /// Logs a failure caught at a feature's boundary. A <see cref="HugrException"/> already
+        /// carries the code of the step that failed; anything else is reported under
+        /// <paramref name="code"/>, with the full exception.
+        /// </summary>
+        internal static void Report(string code, string what, Exception exception)
+        {
+            Log.LogError(exception is HugrException ? exception.Message : code + ": " + what + " (" + exception + ").");
+        }
+
+        /// <summary>Logs a degraded but handled situation under its code.</summary>
+        internal static void Warn(string code, string message)
+        {
+            Log.LogWarning(code + ": " + message);
+        }
+
         private void Awake()
         {
             Log = Logger;
@@ -77,10 +93,7 @@ namespace Hugr
             catch (Exception exception)
             {
                 // One feature that cannot bind never takes the others, or the game, down.
-                Logger.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-PATCH-000: a feature could not be bound (" + exception + ").");
+                Report(ErrorCodes.PatchUnexpected, "a feature could not be bound", exception);
             }
         }
 

@@ -97,10 +97,7 @@ namespace Hugr.Features.Navigation
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-COMPASS-000: the compass was stopped (" + exception + ").");
+                Plugin.Report(ErrorCodes.CompassStopped, "the compass was stopped", exception);
                 Destroy(this);
             }
         }

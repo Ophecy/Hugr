@@ -32,7 +32,7 @@ namespace Hugr.Features.Repair
             if (HaveRepairableItems == null || RepairOneItem == null)
             {
                 throw new HugrException(
-                    "HUGR-REPAIR-001", "InventoryGui no longer exposes the vanilla repair routine.");
+                    ErrorCodes.RepairRoutineMissing, "InventoryGui no longer exposes the vanilla repair routine.");
             }
         }
 
@@ -51,7 +51,7 @@ namespace Hugr.Features.Repair
                 if (++repaired > MaxItemsPerPass)
                 {
                     throw new HugrException(
-                        "HUGR-REPAIR-002",
+                        ErrorCodes.RepairNotConverging,
                         "Repair pass did not converge, stopped after " + MaxItemsPerPass + " items.");
                 }
             }

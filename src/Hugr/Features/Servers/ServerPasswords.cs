@@ -148,10 +148,8 @@ namespace Hugr.Features.Servers
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-SRV-000: unexpected failure while handling a server password (" + exception + ").");
+                Plugin.Report(
+                    ErrorCodes.ServerUnexpected, "unexpected failure while handling a server password", exception);
             }
         }
     }

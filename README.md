@@ -111,9 +111,10 @@ found, resources moved — when reporting a problem.
 13. Join a vanilla server with no Hugr installed — repeat steps 5, 7, 10, 11 and 12, they still
     work.
 
-If the tab is missing, the log carries a `HUGR-UI-0xx` code naming the step that failed; a
-repair or a tracker that refuses to run logs a `HUGR-REPAIR-0xx`, `HUGR-RECIPE-0xx` or
-`HUGR-PATCH-0xx` code the same way.
+Whatever fails logs a `HUGR-<DOMAIN>-<NNN>` code naming the feature and the step: `HUGR-UI-0xx`
+when the tab is missing, `HUGR-REPAIR-0xx` or `HUGR-RECIPE-0xx` for a repair or a tracker that
+refuses to run, `HUGR-PATCH-0xx` when a feature could not hook the game. Every code, what it means
+and what it costs is listed in [ERROR_CODES.md](ERROR_CODES.md).
 
 ## License
 

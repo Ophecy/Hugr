@@ -85,10 +85,7 @@ namespace Hugr.Features.Search
             {
                 // Runs every frame: the search steps aside for the session after saying why, the
                 // inventory stays usable.
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-SEARCH-000: the inventory search was stopped (" + exception + ").");
+                Plugin.Report(ErrorCodes.SearchStopped, "the inventory search was stopped", exception);
                 _stopped = true;
                 Remove();
             }
@@ -148,7 +145,8 @@ namespace Hugr.Features.Search
             TMP_InputField template = Hud.instance == null ? null : Hud.instance.m_buildUi.m_searchField;
             if (template == null || gui.m_player == null)
             {
-                throw new HugrException("HUGR-SEARCH-001", "The build menu has no search field to clone.");
+                throw new HugrException(
+                    ErrorCodes.SearchTemplateMissing, "The build menu has no search field to clone.");
             }
 
             GameObject clone = UnityEngine.Object.Instantiate(template.gameObject, gui.m_player, false);
@@ -159,7 +157,7 @@ namespace Hugr.Features.Search
 
             _field = clone.GetComponent<TMP_InputField>()
                 ?? throw new HugrException(
-                    "HUGR-SEARCH-002", "The cloned search field carries " + Widgets.Describe(clone) + ".");
+                    ErrorCodes.SearchFieldMissing, "The cloned search field carries " + Widgets.Describe(clone) + ".");
 
             // Listeners saved in the prefab still point at the build menu.
             _field.onValueChanged = new TMP_InputField.OnChangeEvent();

@@ -53,7 +53,7 @@ namespace Hugr.Features.Sorting
             catch (Exception exception)
             {
                 // Runs inside InventoryGui.Update: nothing may escape into the game loop.
-                Plugin.Log.LogError("HUGR-STACK-000: unexpected failure while stacking (" + exception + ").");
+                Plugin.Report(ErrorCodes.StackUnexpected, "unexpected failure while stacking", exception);
             }
         }
 

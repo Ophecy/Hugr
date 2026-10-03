@@ -42,7 +42,7 @@ namespace Hugr.Features.Sorting
             catch (Exception exception)
             {
                 throw new HugrException(
-                    "HUGR-SORT-002",
+                    ErrorCodes.SortContainerUnreachable,
                     "InventoryGui.m_currentContainer is not reachable (" + exception.Message + ").");
             }
 
@@ -77,11 +77,8 @@ namespace Hugr.Features.Sorting
             catch (Exception exception)
             {
                 // The inventory must open whatever happens.
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-SORT-000: unexpected failure while building the sort buttons ("
-                          + exception + ").");
+                Plugin.Report(
+                    ErrorCodes.SortButtonsUnexpected, "unexpected failure while building the sort buttons", exception);
             }
         }
 
@@ -93,7 +90,8 @@ namespace Hugr.Features.Sorting
             }
 
             Button template = gui.m_takeAllButton
-                ?? throw new HugrException("HUGR-SORT-003", "The container panel has no button to clone.");
+                ?? throw new HugrException(
+                    ErrorCodes.SortButtonTemplateMissing, "The container panel has no button to clone.");
 
             if (_containerButton == null)
             {
@@ -129,7 +127,7 @@ namespace Hugr.Features.Sorting
             if (badge == null)
             {
                 throw new HugrException(
-                    "HUGR-SORT-006", "The panel has no weight badge to line the sort button up with.");
+                    ErrorCodes.SortBadgeMissing, "The panel has no weight badge to line the sort button up with.");
             }
 
             RectTransform rect = (RectTransform)button.transform;
@@ -149,7 +147,7 @@ namespace Hugr.Features.Sorting
             button.gameObject.SetActive(true);
             Widgets.StripGamepadHints(button.gameObject);
             Widgets.StripScripts(button.gameObject);
-            Widgets.SetLabel(button.gameObject, "Sort", "HUGR-SORT-004");
+            Widgets.SetLabel(button.gameObject, "Sort", ErrorCodes.SortLabelMissing);
             return button;
         }
 
@@ -164,7 +162,7 @@ namespace Hugr.Features.Sorting
                 }
                 catch (Exception exception)
                 {
-                    Plugin.Log.LogError("HUGR-SORT-005: the sort was refused (" + exception + ").");
+                    Plugin.Report(ErrorCodes.SortRefused, "the sort was refused", exception);
                 }
             });
         }

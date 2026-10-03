@@ -44,16 +44,8 @@ namespace Hugr.Features.Repair
             {
                 // The inventory must open whatever happens, so the failure is reported and the
                 // panel is left alone.
-                Plugin.Log.LogError(Report(exception));
+                Plugin.Report(ErrorCodes.AutoRepairUnexpected, "unexpected failure during auto-repair", exception);
             }
-        }
-
-        /// <summary>A patch never lets an exception reach the game: it reports it instead.</summary>
-        private static string Report(Exception exception)
-        {
-            return exception is HugrException
-                ? exception.Message
-                : "HUGR-REPAIR-000: unexpected failure during auto-repair (" + exception + ").";
         }
     }
 }

@@ -58,7 +58,7 @@ namespace Hugr.UI
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError("HUGR-UI-013: Hugr settings were not saved (" + exception.Message + ").");
+                Plugin.Report(ErrorCodes.UiSaveFailed, "Hugr settings were not saved", exception);
             }
             finally
             {
@@ -95,7 +95,7 @@ namespace Hugr.UI
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError("HUGR-UI-014: Hugr settings were not loaded (" + exception.Message + ").");
+                Plugin.Report(ErrorCodes.UiLoadFailed, "Hugr settings were not loaded", exception);
             }
         }
 

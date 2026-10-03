@@ -154,8 +154,9 @@ namespace Hugr.Features
                 else if (!alive || Time.time > claim.Deadline)
                 {
                     Pending.RemoveAt(i);
-                    Plugin.Log.LogWarning(
-                        "HUGR-CLAIM-001: a chest did not answer or hand over its content in time, left untouched.");
+                    Plugin.Warn(
+                        ErrorCodes.ClaimTimedOut,
+                        "a chest did not answer or hand over its content in time, left untouched.");
                     claim.OnFailed();
                 }
             }

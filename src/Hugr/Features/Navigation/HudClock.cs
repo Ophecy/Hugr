@@ -76,10 +76,7 @@ namespace Hugr.Features.Navigation
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-CLOCK-000: the clock was stopped (" + exception + ").");
+                Plugin.Report(ErrorCodes.ClockStopped, "the clock was stopped", exception);
                 Destroy(this);
             }
         }

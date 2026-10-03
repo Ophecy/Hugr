@@ -36,7 +36,7 @@ namespace Hugr.Features
             if (target == null)
             {
                 throw new HugrException(
-                    "HUGR-PATCH-001", "Patch target of " + keys + " no longer exists in the game.");
+                    ErrorCodes.PatchTargetMissing, "Patch target of " + keys + " no longer exists in the game.");
             }
 
             bool applied = false;

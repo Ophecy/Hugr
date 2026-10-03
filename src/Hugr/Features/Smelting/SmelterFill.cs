@@ -28,7 +28,7 @@ namespace Hugr.Features.Smelting
             MethodInfo interact = AccessTools.Method(typeof(Switch), nameof(Switch.Interact));
             if (interact == null)
             {
-                throw new HugrException("HUGR-FILL-001", "Switch no longer exposes Interact.");
+                throw new HugrException(ErrorCodes.SmeltInteractMissing, "Switch no longer exposes Interact.");
             }
 
             FeatureSwitch.Bind(
@@ -77,7 +77,7 @@ namespace Hugr.Features.Smelting
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError("HUGR-FILL-000: unexpected failure while filling a smelter (" + exception + ").");
+                Plugin.Report(ErrorCodes.SmeltUnexpected, "unexpected failure while filling a smelter", exception);
                 return true;
             }
         }
@@ -95,11 +95,12 @@ namespace Hugr.Features.Smelting
 
                 int count = Math.Min(Math.Min(lack, FreeSlots(smelter, input)), Carried(player, accepted));
                 int added = Add(input, player, count);
-                Plugin.Trace("Smelter fill: " + added + "/" + lack + " more added to " + smelter.m_name + " from the chests.");
+                Plugin.Trace("Smelter fill: " + added + "/" + lack
+                    + " more added to " + smelter.m_name + " from the chests.");
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError("HUGR-FILL-002: could not load what the chests handed over (" + exception + ").");
+                Plugin.Report(ErrorCodes.SmeltResumeFailed, "could not load what the chests handed over", exception);
             }
         }
 

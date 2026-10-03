@@ -57,22 +57,19 @@ namespace Hugr.UI
                 // This runs inside Settings.SetAvailableTabs: an exception escaping from here
                 // would take the vanilla panel down with it. Nothing escapes, and what was half
                 // built is gone, so the panel is exactly the one the game would have shown.
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-UI-000: unexpected failure while injecting the tab (" + exception + ").");
+                Plugin.Report(ErrorCodes.UiUnexpected, "unexpected failure while injecting the tab", exception);
             }
         }
 
         private static void Inject(Settings settings, List<GameObject> clones)
         {
             TabHandler tabHandler = Field<TabHandler>(settings, "m_tabHandler")
-                ?? throw new HugrException("HUGR-UI-001", "Settings has no TabHandler.");
+                ?? throw new HugrException(ErrorCodes.UiTabHandlerMissing, "Settings has no TabHandler.");
 
             List<TabHandler.Tab> tabs = tabHandler.m_tabs;
             if (tabs == null || tabs.Count == 0)
             {
-                throw new HugrException("HUGR-UI-002", "Settings panel exposes no tab to clone.");
+                throw new HugrException(ErrorCodes.UiNoTab, "Settings panel exposes no tab to clone.");
             }
 
             if (tabs.Exists(existing => existing.m_page != null && existing.m_page.name == PageName))
@@ -133,7 +130,7 @@ namespace Hugr.UI
             if (path.Count == 0)
             {
                 throw new HugrException(
-                    "HUGR-UI-011", "The row template is the page itself, there is nothing to clone.");
+                    ErrorCodes.UiRowIsPage, "The row template is the page itself, there is nothing to clone.");
             }
 
             page = UnityEngine.Object.Instantiate(sourcePage, sourcePage.parent);
@@ -144,7 +141,7 @@ namespace Hugr.UI
             Widgets.StripScripts(page.gameObject);
 
             Transform row = Resolve(page, path)
-                ?? throw new HugrException("HUGR-UI-011", "The cloned page lost its row template.");
+                ?? throw new HugrException(ErrorCodes.UiRowLost, "The cloned page lost its row template.");
 
             for (Transform node = row; node != page; node = node.parent)
             {
@@ -164,7 +161,7 @@ namespace Hugr.UI
         {
             if (template.m_button == null)
             {
-                throw new HugrException("HUGR-UI-005", "Template tab has no button to clone.");
+                throw new HugrException(ErrorCodes.UiTabButtonMissing, "Template tab has no button to clone.");
             }
 
             Button button = UnityEngine.Object.Instantiate(template.m_button, template.m_button.transform.parent);
@@ -176,7 +173,7 @@ namespace Hugr.UI
 
             // The clone inherits the template's wiring; TabHandler.Init re-binds it on Start.
             button.onClick = new Button.ButtonClickedEvent();
-            Widgets.SetLabel(button.gameObject, TabLabel, "HUGR-UI-006");
+            Widgets.SetLabel(button.gameObject, TabLabel, ErrorCodes.UiTabLabelMissing);
 
             return button;
         }
@@ -191,8 +188,9 @@ namespace Hugr.UI
             GameObject[] hints = TryField<GameObject[]>(settings, "m_tabKeyHints");
             if (hints == null)
             {
-                Plugin.Log.LogWarning(
-                    "HUGR-UI-012: Settings.m_tabKeyHints is unreachable, the Hugr tab may show a "
+                Plugin.Warn(
+                    ErrorCodes.UiKeyHintsUnreachable,
+                    "Settings.m_tabKeyHints is unreachable, the Hugr tab may show a "
                     + "leftover gamepad hint.");
                 return;
             }
@@ -227,7 +225,7 @@ namespace Hugr.UI
         {
             TMP_Text caption = row0.GetComponentInChildren<TMP_Text>(true)
                 ?? throw new HugrException(
-                    "HUGR-UI-015", "The row template has no caption to style the version with.");
+                    ErrorCodes.UiVersionCaptionMissing, "The row template has no caption to style the version with.");
 
             TMP_Text version = Widgets.CloneText(caption, row0.parent, "HugrVersion");
             version.text = Plugin.PluginName + " " + BuildInfo.DisplayVersion;
@@ -240,14 +238,16 @@ namespace Hugr.UI
 
             Toggle toggle = row.GetComponentInChildren<Toggle>(true)
                 ?? throw new HugrException(
-                    "HUGR-UI-007", "The cloned row has no toggle, it carries " + Widgets.Describe(row) + ".");
+                    ErrorCodes.UiRowToggleMissing,
+                    "The cloned row has no toggle, it carries " + Widgets.Describe(row) + ".");
 
             toggle.onValueChanged = new Toggle.ToggleEvent();
             toggle.isOn = entry.Value;
 
             TMP_Text caption = row.GetComponentInChildren<TMP_Text>(true)
                 ?? throw new HugrException(
-                    "HUGR-UI-008", "The cloned row has no caption, it carries " + Widgets.Describe(row) + ".");
+                    ErrorCodes.UiRowCaptionMissing,
+                    "The cloned row has no caption, it carries " + Widgets.Describe(row) + ".");
             caption.text = label;
 
             tab.Add(toggle, entry);
@@ -291,7 +291,8 @@ namespace Hugr.UI
                 return row;
             }
 
-            throw new HugrException("HUGR-UI-009", "No vanilla toggle found to use as a row template.");
+            throw new HugrException(
+                ErrorCodes.UiRowTemplateMissing, "No vanilla toggle found to use as a row template.");
         }
 
         private static List<int> IndexPath(Transform node, Transform root)
@@ -324,7 +325,7 @@ namespace Hugr.UI
         private static T Field<T>(Settings settings, string name) where T : class
         {
             return TryField<T>(settings, name)
-                ?? throw new HugrException("HUGR-UI-010", "Settings." + name + " is not reachable.");
+                ?? throw new HugrException(ErrorCodes.UiFieldUnreachable, "Settings." + name + " is not reachable.");
         }
 
         private static T TryField<T>(Settings settings, string name) where T : class

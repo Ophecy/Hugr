@@ -94,7 +94,7 @@ namespace Hugr.Features.Crafting
             catch (Exception exception)
             {
                 // Runs inside InventoryGui.Update: nothing may escape into the game loop.
-                Plugin.Log.LogError("HUGR-CRAFT-000: unexpected failure while fetching resources (" + exception + ").");
+                Plugin.Report(ErrorCodes.CraftUnexpected, "unexpected failure while fetching resources", exception);
             }
         }
 
@@ -184,7 +184,7 @@ namespace Hugr.Features.Crafting
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError("HUGR-CRAFT-002: could not fetch the resources of a craft (" + exception + ").");
+                Plugin.Report(ErrorCodes.CraftFetchFailed, "could not fetch the resources of a craft", exception);
             }
         }
 
@@ -272,7 +272,7 @@ namespace Hugr.Features.Crafting
             }
             catch (Exception exception)
             {
-                Plugin.Log.LogError("HUGR-CRAFT-003: could not fetch the resources of a piece (" + exception + ").");
+                Plugin.Report(ErrorCodes.CraftPieceFetchFailed, "could not fetch the resources of a piece", exception);
             }
         }
 
@@ -445,8 +445,9 @@ namespace Hugr.Features.Crafting
             Plugin.Trace("Pull " + (complete ? "complete." : "incomplete."));
             if (!complete)
             {
-                Plugin.Log.LogWarning(
-                    "HUGR-CRAFT-001: the nearby chests did not hand over everything that was missing"
+                Plugin.Warn(
+                    ErrorCodes.CraftPullIncomplete,
+                    "the nearby chests did not hand over everything that was missing"
                     + (pull.Full ? ", the inventory is full." : "."));
                 if (pull.Full && Player.m_localPlayer != null)
                 {

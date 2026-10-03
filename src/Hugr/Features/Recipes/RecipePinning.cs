@@ -26,11 +26,11 @@ namespace Hugr.Features.Recipes
         {
             _selectedRecipe = AccessTools.Field(typeof(InventoryGui), "m_selectedRecipe")
                 ?? throw new HugrException(
-                    "HUGR-RECIPE-001", "InventoryGui no longer exposes the selected recipe.");
+                    ErrorCodes.RecipeSelectionMissing, "InventoryGui no longer exposes the selected recipe.");
 
             _recipeOfPair = AccessTools.Property(_selectedRecipe.FieldType, "Recipe")
                 ?? throw new HugrException(
-                    "HUGR-RECIPE-005", "The selected recipe no longer carries a Recipe.");
+                    ErrorCodes.RecipeOfSelectionMissing, "The selected recipe no longer carries a Recipe.");
 
             FeatureSwitch.Bind(
                 harmony,
@@ -48,10 +48,7 @@ namespace Hugr.Features.Recipes
             catch (Exception exception)
             {
                 // Runs inside InventoryGui.Update: nothing may escape into the game loop.
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-RECIPE-000: unexpected failure while pinning (" + exception + ").");
+                Plugin.Report(ErrorCodes.RecipeUnexpected, "unexpected failure while pinning", exception);
             }
         }
 

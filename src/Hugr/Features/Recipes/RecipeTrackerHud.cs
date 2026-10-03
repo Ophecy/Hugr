@@ -87,10 +87,7 @@ namespace Hugr.Features.Recipes
             {
                 // Reporting this every frame would drown the log, so the tracker steps aside
                 // after saying why.
-                Plugin.Log.LogError(
-                    exception is HugrException
-                        ? exception.Message
-                        : "HUGR-RECIPE-006: the tracker was stopped (" + exception + ").");
+                Plugin.Report(ErrorCodes.RecipeTrackerStopped, "the tracker was stopped", exception);
                 Destroy(this);
             }
         }
@@ -156,7 +153,7 @@ namespace Hugr.Features.Recipes
             _panel.SetParent(root, false);
             Anchor(_panel, new Vector2(-40f, -300f), new Vector2(280f, 0f));
 
-            _title = Clone<TMP_Text>(template, "res_name", _panel, "HUGR-RECIPE-002");
+            _title = Clone<TMP_Text>(template, "res_name", _panel, ErrorCodes.RecipeTitleMissing);
             Anchor(_title.rectTransform, Vector2.zero, new Vector2(280f, rowHeight));
             _title.alignment = TextAlignmentOptions.Right;
 
@@ -179,15 +176,15 @@ namespace Hugr.Features.Recipes
                     Anchor(rect, new Vector2(0f, -offset), new Vector2(280f, rowHeight));
                 }
 
-                Image icon = Find<Image>(row, "res_icon", "HUGR-RECIPE-003");
+                Image icon = Find<Image>(row, "res_icon", ErrorCodes.RecipeIconMissing);
                 icon.sprite = requirement.m_resItem.m_itemData.GetIcon();
                 icon.enabled = true;
 
-                TMP_Text name = Find<TMP_Text>(row, "res_name", "HUGR-RECIPE-002");
+                TMP_Text name = Find<TMP_Text>(row, "res_name", ErrorCodes.RecipeNameMissing);
                 name.text = Localization.instance.Localize(
                     requirement.m_resItem.m_itemData.m_shared.m_name);
 
-                TMP_Text amount = Find<TMP_Text>(row, "res_amount", "HUGR-RECIPE-004");
+                TMP_Text amount = Find<TMP_Text>(row, "res_amount", ErrorCodes.RecipeAmountMissing);
 
                 _rows.Add(new Row(requirement, name, amount));
                 offset += rowHeight + 4f;
