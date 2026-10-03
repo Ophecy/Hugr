@@ -342,6 +342,41 @@ namespace Hugr.Features.Crafting
         }
 
         /// <summary>
+        /// For another feature: moves into the inventory up to <paramref name="amount"/> units of
+        /// the named items the chests hold, first names first, then calls <paramref name="onDone"/>
+        /// — within the call when every chest is this client's. Returns false, without calling it,
+        /// when the feature is off, a pull is in flight or the chests hold none of the items.
+        /// </summary>
+        internal static bool Fetch(IList<string> names, int amount, Action onDone)
+        {
+            Player player = Player.m_localPlayer;
+            if (!ModConfig.CraftFromContainers.Value || _pull != null || player == null)
+            {
+                return false;
+            }
+
+            RefreshStock(player);
+            Dictionary<string, int> wanted = new Dictionary<string, int>();
+            foreach (string name in names)
+            {
+                int take = Math.Min(Stocked(name), amount);
+                if (take > 0)
+                {
+                    wanted[name] = take;
+                    amount -= take;
+                }
+            }
+
+            if (wanted.Count == 0)
+            {
+                return false;
+            }
+
+            StartPull(player, wanted, complete => onDone());
+            return true;
+        }
+
+        /// <summary>
         /// Moves what is missing from the chests into the inventory. A chest this client owns
         /// gives within the call, hence the request loop counting itself among the answers.
         /// </summary>

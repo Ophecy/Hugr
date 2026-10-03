@@ -39,6 +39,8 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> InventorySearch { get; private set; }
 
+        internal static ConfigEntry<bool> SmelterFill { get; private set; }
+
         internal static ConfigEntry<bool> QuickStack { get; private set; }
 
         internal static ConfigEntry<KeyboardShortcut> QuickStackKey { get; private set; }
@@ -125,6 +127,10 @@ namespace Hugr.Configuration
             InventorySearch = config.Bind(
                 "Inventory", "InventorySearch", true,
                 "Add a search field that greys out the items not matching it, in the inventory and open containers.");
+
+            SmelterFill = config.Bind(
+                "Stations", "SmelterFill", true,
+                "Shift+E on the ore or fuel input of a smelting station loads it to its capacity in one press.");
 
             QuickStack = config.Bind(
                 "Inventory", "QuickStack", true,

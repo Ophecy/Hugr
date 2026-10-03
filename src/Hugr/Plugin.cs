@@ -13,6 +13,7 @@ using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
 using Hugr.Features.Search;
 using Hugr.Features.Servers;
+using Hugr.Features.Smelting;
 using Hugr.Features.Sorting;
 using Hugr.UI;
 
@@ -62,6 +63,7 @@ namespace Hugr
             Bind(HudClock.Bind);
             Bind(HudCompass.Bind);
             Bind(InventorySearch.Bind);
+            Bind(SmelterFill.Bind);
 
             Logger.LogInfo("Hugr " + BuildInfo.DisplayVersion + " loaded.");
         }
