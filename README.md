@@ -9,8 +9,8 @@ gameplay content. See `Hugr_Specifications_Fonctionnelles.md` and
 
 ## Status
 
-V2 — in progress. Repair is done, and a pinned recipe now follows you on screen with live
-resource counts. Multiple pins and the shopping list are still to come.
+V2 — in progress. Repair is done, and pinned recipes follow you on screen with live resource
+counts and a shopping list totalling them.
 
 ## Features
 
@@ -18,8 +18,8 @@ resource counts. Multiple pins and the shopping list are still to come.
 | --- | --- |
 | Automatic repair | Repairs every item the station accepts as soon as the crafting panel opens. |
 | Repair everything at once | One press of the vanilla repair button repairs the whole pile. |
-| Pinned recipes | Select a recipe in the crafting panel and press **P**: it stays on screen with what you have and what you still need. Press **P** again on it to unpin. |
-| Shopping list | Placeholder, not implemented yet. |
+| Pinned recipes | Select a recipe in the crafting panel and press **P**: it stays on screen with what you have and what you still need. Press **P** again on it to unpin. Up to 3 recipes can be pinned at once (`MaxPinnedRecipes` in the config file: 1, 3 or 5). |
+| Shopping list | With two pinned recipes or more, a last block totals the resources they require together, against what you carry. |
 | Sort button | A **Sort** button on the inventory and on any open container: partial stacks are merged, then items are grouped by kind and name. The hotbar row keeps its slots — its stacks are still topped up. |
 | Quick stack to nearby chests | Press **G**: every chest within 10 m takes from your inventory the items it already holds, through the chest's own vanilla "stack all". Equipped items stay; chests in use, someone else's private chests, chests behind someone else's ward and dungeon chests are skipped. Key and range are `QuickStackKey` and `QuickStackRange` in the config file. |
 | Craft and build from nearby chests | Chests, carts and ships within 15 m of you, or of a crafting station whose range covers you, count in the crafting panel and the build menu. When you craft or place a piece, only what your inventory lacks is moved into it from those chests, then the game crafts or builds as usual. If a chest belongs to another player's client, the craft waits for it and the placement is replayed once the resources arrive. Range is `CraftFromContainersRange` in the config file. |
@@ -36,8 +36,8 @@ the messages are the vanilla ones — only the number of clicks changes. The tra
 crafting panel's own requirement widgets, icons included. A feature you turn off has no patch
 installed on the game at all.
 
-The pin key is `PinRecipeKey` in the config file, and the pin itself is stored there too, so it
-survives a restart.
+The pin key is `PinRecipeKey` in the config file, and the pins themselves are stored there too, so
+they survive a restart.
 
 Sorting a chest changes what that chest contains, exactly as moving items by hand does — the
 same code path, the same save. Hugr writes nothing of its own into the world.

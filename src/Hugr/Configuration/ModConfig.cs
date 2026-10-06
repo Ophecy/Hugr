@@ -13,7 +13,7 @@ namespace Hugr.Configuration
     /// </summary>
     /// <remarks>
     /// A toggle is the feature's switch, not a flag it reads: turning one off removes its
-    /// Harmony patch. The recipe entries carry no behaviour yet, they land with V2.
+    /// Harmony patch.
     /// </remarks>
     internal static class ModConfig
     {
@@ -57,8 +57,10 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<KeyboardShortcut> PinRecipeKey { get; private set; }
 
-        /// <summary>Prefab name of the pinned recipe, written by the crafting panel.</summary>
+        /// <summary>Prefab names of the pinned recipes, comma-separated, written by the crafting panel.</summary>
         internal static ConfigEntry<string> PinnedRecipe { get; private set; }
+
+        internal static ConfigEntry<int> MaxPinnedRecipes { get; private set; }
 
         private static ConfigFile _config;
 
@@ -106,7 +108,7 @@ namespace Hugr.Configuration
 
             ShoppingList = config.Bind(
                 "Recipes", "ShoppingList", false,
-                "Aggregate the resources required by every pinned recipe.");
+                "Add to the pinned recipes, once two or more are pinned, a list totalling the resources they require.");
 
             SortButton = config.Bind(
                 "Inventory", "SortButton", true,
@@ -174,7 +176,13 @@ namespace Hugr.Configuration
 
             PinnedRecipe = config.Bind(
                 "Recipes", "PinnedRecipe", string.Empty,
-                "Pinned recipe, by item prefab name. Pin from the crafting panel rather than here.");
+                "Pinned recipes, by item prefab name, separated by commas. Pin from the crafting panel rather than here.");
+
+            MaxPinnedRecipes = config.Bind(
+                "Recipes", "MaxPinnedRecipes", 3,
+                new ConfigDescription(
+                    "How many recipes can be pinned at once.",
+                    new AcceptableValueList<int>(1, 3, 5)));
         }
     }
 }

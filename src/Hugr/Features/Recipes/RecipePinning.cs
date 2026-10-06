@@ -10,8 +10,8 @@ namespace Hugr.Features.Recipes
 {
     /// <summary>
     /// Pins the recipe selected in the crafting panel, on a key press, and keeps the on-screen
-    /// tracker attached to the HUD. The pin itself is a config entry, so it survives the session
-    /// like any other setting.
+    /// tracker attached to the HUD. Several recipes can be pinned, up to a configurable limit.
+    /// The pins are a config entry, so they survive the session like any other setting.
     /// Execution: client. Persistence: client (BepInEx config). Server interaction: none — the
     /// recipe list and the inventory are already on the client.
     /// </summary>
@@ -67,14 +67,22 @@ namespace Hugr.Features.Recipes
                 return;
             }
 
-            bool pinned = PinnedRecipe.Toggle(recipe);
-            Player.m_localPlayer.Message(
-                MessageHud.MessageType.Center,
-                (pinned ? "Pinned " : "Unpinned ") + Localization.instance.Localize(
-                    recipe.m_item.m_itemData.m_shared.m_name),
-                0,
-                null,
-                false);
+            string name = Localization.instance.Localize(recipe.m_item.m_itemData.m_shared.m_name);
+            string message;
+            switch (PinnedRecipe.Toggle(recipe))
+            {
+                case PinnedRecipe.PinResult.Pinned:
+                    message = "Pinned " + name;
+                    break;
+                case PinnedRecipe.PinResult.Unpinned:
+                    message = "Unpinned " + name;
+                    break;
+                default:
+                    message = "Pin limit reached (" + ModConfig.MaxPinnedRecipes.Value + ")";
+                    break;
+            }
+
+            Player.m_localPlayer.Message(MessageHud.MessageType.Center, message, 0, null, false);
         }
     }
 }

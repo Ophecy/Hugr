@@ -1,63 +1,108 @@
 // Copyright (C) 2026 Ophecy
 // SPDX-License-Identifier: GPL-3.0-or-later
 
+using System.Collections.Generic;
 using Hugr.Configuration;
 using UnityEngine;
 
 namespace Hugr.Features.Recipes
 {
     /// <summary>
-    /// The pinned recipe, stored as the item prefab name in the BepInEx config — the single
-    /// source of persistence — and resolved back through <c>ObjectDB</c> on demand.
+    /// The pinned recipes, stored as item prefab names in the BepInEx config — the single source
+    /// of persistence — in the order they were pinned, and resolved back through
+    /// <c>ObjectDB</c> on demand.
     /// </summary>
     internal static class PinnedRecipe
     {
-        private static string _resolvedName;
-        private static Recipe _resolved;
+        private const char Separator = ',';
 
-        internal static bool IsPinned(Recipe recipe)
+        private static readonly List<Recipe> Resolved = new List<Recipe>();
+
+        /// <summary>Config value <see cref="Resolved"/> was read from, null until every name resolves.</summary>
+        private static string _resolvedFrom;
+
+        internal enum PinResult
         {
-            return recipe != null && NameOf(recipe) == ModConfig.PinnedRecipe.Value;
+            Pinned,
+            Unpinned,
+            Full
         }
 
-        /// <summary>Pins the recipe, or clears the pin when it was already the pinned one.</summary>
-        internal static bool Toggle(Recipe recipe)
+        /// <summary>
+        /// Pins the recipe, or unpins it when it was already pinned. A new pin is refused once
+        /// <see cref="ModConfig.MaxPinnedRecipes"/> recipes are pinned.
+        /// </summary>
+        internal static PinResult Toggle(Recipe recipe)
         {
-            bool pin = !IsPinned(recipe);
-            ModConfig.PinnedRecipe.Value = pin ? NameOf(recipe) : string.Empty;
-            return pin;
+            List<string> names = Names();
+            string name = recipe.m_item.gameObject.name;
+            bool unpinned = names.Remove(name);
+            if (!unpinned)
+            {
+                if (names.Count >= ModConfig.MaxPinnedRecipes.Value)
+                {
+                    return PinResult.Full;
+                }
+
+                names.Add(name);
+            }
+
+            ModConfig.PinnedRecipe.Value = string.Join(Separator.ToString(), names);
+            return unpinned ? PinResult.Unpinned : PinResult.Pinned;
         }
 
-        /// <summary>The pinned recipe, or null when nothing is pinned or the item is unknown.</summary>
-        internal static Recipe Resolve()
+        /// <summary>
+        /// The pinned recipes the game knows, in pin order; a name it does not know is skipped and
+        /// looked up again on the next call. The list is shared: read it, do not keep it.
+        /// </summary>
+        internal static List<Recipe> ResolveAll()
         {
-            string name = ModConfig.PinnedRecipe.Value;
-            if (string.IsNullOrEmpty(name) || ObjectDB.instance == null)
+            string value = ModConfig.PinnedRecipe.Value;
+            if (ObjectDB.instance == null)
             {
-                return null;
+                Resolved.Clear();
+                _resolvedFrom = null;
+                return Resolved;
             }
 
-            if (name == _resolvedName && _resolved != null)
+            if (value == _resolvedFrom)
             {
-                return _resolved;
+                return Resolved;
             }
 
-            _resolvedName = name;
-            _resolved = null;
-
-            GameObject prefab = ObjectDB.instance.GetItemPrefab(name);
-            ItemDrop item = prefab == null ? null : prefab.GetComponent<ItemDrop>();
-            if (item != null)
+            Resolved.Clear();
+            bool complete = true;
+            foreach (string name in Names())
             {
-                _resolved = ObjectDB.instance.GetRecipe(item.m_itemData);
+                GameObject prefab = ObjectDB.instance.GetItemPrefab(name);
+                ItemDrop item = prefab == null ? null : prefab.GetComponent<ItemDrop>();
+                Recipe recipe = item == null ? null : ObjectDB.instance.GetRecipe(item.m_itemData);
+                if (recipe == null)
+                {
+                    complete = false;
+                }
+                else
+                {
+                    Resolved.Add(recipe);
+                }
             }
 
-            return _resolved;
+            _resolvedFrom = complete ? value : null;
+            return Resolved;
         }
 
-        private static string NameOf(Recipe recipe)
+        private static List<string> Names()
         {
-            return recipe == null || recipe.m_item == null ? string.Empty : recipe.m_item.gameObject.name;
+            List<string> names = new List<string>();
+            foreach (string name in ModConfig.PinnedRecipe.Value.Split(Separator))
+            {
+                if (name.Trim().Length > 0)
+                {
+                    names.Add(name.Trim());
+                }
+            }
+
+            return names;
         }
     }
 }
