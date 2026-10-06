@@ -28,6 +28,7 @@ resource counts. Multiple pins and the shopping list are still to come.
 | Clock | The day and the time of day under the minimap, on the sun's scale: 06:00 is sunrise, 18:00 sunset. |
 | Compass | A strip across the top of the screen with the eight directions, in the game's language. |
 | Inventory search | A search field above the inventory: items of the inventory and of the open container that do not match are greyed out. The field empties when the inventory closes. |
+| Recipe search | What you type in the inventory search field also narrows the crafting panel: only the recipes whose item matches stay in the list, in the craft and the upgrade tabs. Needs **Inventory search**. |
 | Inventory category filters | Seven buttons above the inventory — Weapons, Armor, Tools, Food, Potions, Materials, Misc: press one and the items of every other category are greyed out, in the inventory and in the open container. Press it again to see everything. Combines with the search; the filter is dropped when the inventory closes. |
 
 Repair calls Valheim's own repair routine, so the station rules, the skill gain, the effects and

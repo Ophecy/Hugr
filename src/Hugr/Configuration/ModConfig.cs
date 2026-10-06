@@ -41,6 +41,8 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> CategoryFilters { get; private set; }
 
+        internal static ConfigEntry<bool> RecipeSearch { get; private set; }
+
         internal static ConfigEntry<bool> SmelterFill { get; private set; }
 
         internal static ConfigEntry<bool> QuickStack { get; private set; }
@@ -133,6 +135,10 @@ namespace Hugr.Configuration
             CategoryFilters = config.Bind(
                 "Inventory", "CategoryFilters", true,
                 "Add category buttons above the inventory that grey out the items of every other category, in the inventory and open containers.");
+
+            RecipeSearch = config.Bind(
+                "Recipes", "RecipeSearch", true,
+                "Narrow the recipe list of the crafting panel to what is typed in the inventory search field.");
 
             SmelterFill = config.Bind(
                 "Stations", "SmelterFill", true,

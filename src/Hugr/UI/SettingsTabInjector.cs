@@ -95,6 +95,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.Compass, "Compass");
             AddRow(row, tab, ModConfig.InventorySearch, "Inventory search");
             AddRow(row, tab, ModConfig.CategoryFilters, "Inventory category filters");
+            AddRow(row, tab, ModConfig.RecipeSearch, "Recipe search");
             AddRow(row, tab, ModConfig.DebugMode, "Debug mode (log)");
             AddVersion(row);
             MakeScrollable(settings, (RectTransform)row.parent);

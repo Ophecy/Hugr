@@ -104,13 +104,15 @@ code. A retired number is never reused.
 | `HUGR-SMELT-001` | Error | The game no longer exposes the switch interaction. | The feature is off for the session. |
 | `HUGR-SMELT-002` | Error | What the chests handed over could not be loaded. | The items stay in the inventory. |
 
-## SEARCH — inventory search
+## SEARCH — inventory and recipe search
 
 | Code | Level | Meaning | Effect |
 | --- | --- | --- | --- |
 | `HUGR-SEARCH-000` | Error | Unexpected failure in the search. | The search field is removed until the plugin reloads. |
 | `HUGR-SEARCH-001` | Error | The build menu has no search field to clone. | No search field. |
 | `HUGR-SEARCH-002` | Error | The cloned search field is not an input field. | No search field. |
+| `HUGR-SEARCH-003` | Error | Unexpected failure while filtering the recipe list. | The crafting panel shows every recipe. |
+| `HUGR-SEARCH-004` | Error | The crafting panel could not rebuild its list after the search changed. | The list follows the search at the next change of inventory. |
 
 ## FILTER — inventory category filters
 

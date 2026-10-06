@@ -80,6 +80,7 @@ namespace Hugr
             Bind(HudCompass.Bind);
             Bind(InventorySearch.Bind);
             Bind(CategoryFilters.Bind);
+            Bind(RecipeSearch.Bind);
             Bind(SmelterFill.Bind);
 
             Logger.LogInfo("Hugr " + BuildInfo.DisplayVersion + " loaded.");

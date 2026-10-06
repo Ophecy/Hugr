@@ -46,6 +46,8 @@ namespace Hugr
         internal const string SearchStopped = "HUGR-SEARCH-000";
         internal const string SearchTemplateMissing = "HUGR-SEARCH-001";
         internal const string SearchFieldMissing = "HUGR-SEARCH-002";
+        internal const string RecipeSearchUnexpected = "HUGR-SEARCH-003";
+        internal const string RecipeSearchRefreshFailed = "HUGR-SEARCH-004";
 
         internal const string ServerUnexpected = "HUGR-SERVER-000";
 

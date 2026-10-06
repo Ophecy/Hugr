@@ -34,6 +34,21 @@ namespace Hugr.Features.Search
             get { return _field == null ? 0f : ((RectTransform)_field.transform).rect.width + Gap; }
         }
 
+        /// <summary>Raised when what is typed changes, and when the field goes away.</summary>
+        internal static event Action TermChanged;
+
+        /// <summary>What is typed, ready to match against; empty without a field.</summary>
+        internal static string Term
+        {
+            get { return _field == null ? string.Empty : Normalize(_field.text); }
+        }
+
+        /// <summary>Whether the localized name of the item contains <paramref name="term"/>.</summary>
+        internal static bool Matches(ItemDrop.ItemData item, string term)
+        {
+            return Normalize(Localization.instance.Localize(item.m_shared.m_name)).Contains(term);
+        }
+
         internal static void Bind(Harmony harmony)
         {
             ModConfig.InventorySearch.SettingChanged += (sender, args) =>
@@ -52,12 +67,14 @@ namespace Hugr.Features.Search
         /// <summary>Takes the field off the panel when the feature is switched off or unloaded.</summary>
         internal static void Remove()
         {
-            if (_field != null)
+            if (_field == null)
             {
-                UnityEngine.Object.DestroyImmediate(_field.gameObject);
+                return;
             }
 
+            UnityEngine.Object.DestroyImmediate(_field.gameObject);
             _field = null;
+            TermChanged?.Invoke();
         }
 
         private static void Patch(Harmony harmony, Type type, string target, string postfix)
@@ -85,12 +102,10 @@ namespace Hugr.Features.Search
                     Build(gui);
                 }
 
-                string term = Normalize(_field.text);
+                string term = Term;
                 if (term.Length > 0)
                 {
-                    Dim(
-                        __instance,
-                        item => Normalize(Localization.instance.Localize(item.m_shared.m_name)).Contains(term));
+                    Dim(__instance, item => Matches(item, term));
                 }
             }
             catch (Exception exception)
@@ -178,6 +193,7 @@ namespace Hugr.Features.Search
             _field.onSelect = new TMP_InputField.SelectionEvent();
             _field.onDeselect = new TMP_InputField.SelectionEvent();
             _field.text = string.Empty;
+            _field.onValueChanged.AddListener(text => TermChanged?.Invoke());
 
             Place((RectTransform)clone.transform);
             Plugin.Log.LogInfo("Inventory search added.");
