@@ -78,5 +78,6 @@ namespace Hugr
         internal const string UiLoadFailed = "HUGR-UI-014";
         internal const string UiVersionCaptionMissing = "HUGR-UI-015";
         internal const string UiRowLost = "HUGR-UI-016";
+        internal const string UiScrollTemplateMissing = "HUGR-UI-017";
     }
 }

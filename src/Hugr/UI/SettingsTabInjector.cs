@@ -97,6 +97,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.CategoryFilters, "Inventory category filters");
             AddRow(row, tab, ModConfig.DebugMode, "Debug mode (log)");
             AddVersion(row);
+            MakeScrollable(settings, (RectTransform)row.parent);
 
             Button button = BuildTabButton(settings, tabs[0], clones);
 
@@ -156,6 +157,72 @@ namespace Hugr.UI
             }
 
             return row;
+        }
+
+        /// <summary>
+        /// Puts the row container in a scroll view: the vanilla page gives it a fixed height that
+        /// holds a dozen rows, and Hugr has more settings than that. The view takes the height
+        /// the container had and the full width of the page, so rows are only ever cut off at the
+        /// top and at the bottom; the container keeps its horizontal place and grows downwards.
+        /// </summary>
+        /// <remarks>
+        /// The wheel speed is read off the panel's own scroll views rather than guessed. The
+        /// fastest one is the reference: a dropdown's list keeps Unity's default, which the wheel
+        /// hardly moves, while the lists the game tuned are far above it.
+        /// </remarks>
+        private static void MakeScrollable(Settings settings, RectTransform list)
+        {
+            ScrollRect template = null;
+            foreach (ScrollRect candidate in settings.GetComponentsInChildren<ScrollRect>(true))
+            {
+                if (candidate.vertical
+                    && (template == null || candidate.scrollSensitivity > template.scrollSensitivity))
+                {
+                    template = candidate;
+                }
+            }
+
+            if (template == null)
+            {
+                Plugin.Warn(
+                    ErrorCodes.UiScrollTemplateMissing,
+                    "the settings panel has no scroll view to take the wheel speed from, "
+                    + "the Hugr tab does not scroll.");
+                return;
+            }
+
+            GameObject view = new GameObject(
+                "HugrViewport", typeof(RectTransform), typeof(RectMask2D), typeof(Image), typeof(ScrollRect));
+            view.layer = list.gameObject.layer;
+
+            RectTransform viewport = (RectTransform)view.transform;
+            viewport.SetParent(list.parent, false);
+            viewport.SetSiblingIndex(list.GetSiblingIndex());
+            viewport.anchorMin = new Vector2(0f, list.anchorMin.y);
+            viewport.anchorMax = new Vector2(1f, list.anchorMax.y);
+            viewport.offsetMin = new Vector2(0f, list.offsetMin.y);
+            viewport.offsetMax = new Vector2(0f, list.offsetMax.y);
+
+            // Invisible, but it is what the wheel hits between two rows.
+            view.GetComponent<Image>().color = Color.clear;
+
+            float x = list.anchoredPosition.x;
+            float width = list.sizeDelta.x;
+            list.SetParent(viewport, false);
+            list.anchorMin = new Vector2(list.anchorMin.x, 1f);
+            list.anchorMax = new Vector2(list.anchorMax.x, 1f);
+            list.pivot = new Vector2(list.pivot.x, 1f);
+            list.sizeDelta = new Vector2(width, 0f);
+            list.anchoredPosition = new Vector2(x, 0f);
+            list.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            ScrollRect scroll = view.GetComponent<ScrollRect>();
+            scroll.content = list;
+            scroll.viewport = viewport;
+            scroll.horizontal = false;
+            scroll.vertical = true;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = template.scrollSensitivity;
         }
 
         private static Button BuildTabButton(Settings settings, TabHandler.Tab template, List<GameObject> clones)

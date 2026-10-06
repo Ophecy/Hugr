@@ -37,6 +37,7 @@ code. A retired number is never reused.
 | `HUGR-UI-014` | Error | The settings were not loaded into the tab. | The toggles may not reflect the config file. |
 | `HUGR-UI-015` | Error | The row template has no caption to style the version line with. | No Hugr tab. |
 | `HUGR-UI-016` | Error | The cloned page lost its row template. | No Hugr tab. |
+| `HUGR-UI-017` | Warning | The settings panel has no scroll view to take the wheel speed from. | The tab works but does not scroll: the last settings may sit below its bottom edge. |
 
 `HUGR-UI-003` and `HUGR-UI-004` are retired.
 
