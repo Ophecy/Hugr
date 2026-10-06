@@ -85,6 +85,7 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.RepairAll, "Repair everything at once");
             AddRow(row, tab, ModConfig.RecipeTracker, "Pinned recipes");
             AddRow(row, tab, ModConfig.ShoppingList, "Shopping list");
+            AddRow(row, tab, ModConfig.MissingOnly, "Pinned recipes: missing resources only");
             AddRow(row, tab, ModConfig.SortButton, "Sort button");
             AddRow(row, tab, ModConfig.SortBaseSlotsOnly, "Sort the base inventory slots only");
             AddRow(row, tab, ModConfig.QuickStack, "Quick stack to nearby chests");

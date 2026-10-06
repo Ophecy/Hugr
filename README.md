@@ -18,7 +18,8 @@ counts and a shopping list totalling them.
 | --- | --- |
 | Automatic repair | Repairs every item the station accepts as soon as the crafting panel opens. |
 | Repair everything at once | One press of the vanilla repair button repairs the whole pile. |
-| Pinned recipes | Select a recipe in the crafting panel and press **P**: it stays on screen with what you have and what you still need. Press **P** again on it to unpin. Up to 3 recipes can be pinned at once (`MaxPinnedRecipes` in the config file: 1, 3 or 5). |
+| Pinned recipes | Select a recipe in the crafting panel, or point at an item in your inventory, and press **P**: its recipe stays on screen with the station it needs, what you have and what you still need. Press **P** again on it to unpin. **Page Up** / **Page Down** aim for one craft more or less, and the resources follow. Up to 3 recipes can be pinned at once (`MaxPinnedRecipes` in the config file: 1, 3 or 5). |
+| Pinned recipes: missing resources only | Hides, under each pinned recipe, the resources you already have enough of. |
 | Shopping list | With two pinned recipes or more, a last block totals the resources they require together, against what you carry. |
 | Sort button | A **Sort** button on the inventory and on any open container: partial stacks are merged, then items are grouped by kind and name. The hotbar row keeps its slots — its stacks are still topped up. |
 | Quick stack to nearby chests | Press **G**: every chest within 10 m takes from your inventory the items it already holds, through the chest's own vanilla "stack all". Equipped items stay; chests in use, someone else's private chests, chests behind someone else's ward and dungeon chests are skipped. Key and range are `QuickStackKey` and `QuickStackRange` in the config file. |
@@ -36,7 +37,7 @@ the messages are the vanilla ones — only the number of clicks changes. The tra
 crafting panel's own requirement widgets, icons included. A feature you turn off has no patch
 installed on the game at all.
 
-The pin key is `PinRecipeKey` in the config file, and the pins themselves are stored there too, so
+The pin keys are `PinRecipeKey`, `PinMoreKey` and `PinLessKey` in the config file, and the pins themselves are stored there too, so
 they survive a restart.
 
 Sorting a chest changes what that chest contains, exactly as moving items by hand does — the

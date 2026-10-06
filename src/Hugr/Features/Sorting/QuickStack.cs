@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using HarmonyLib;
 using Hugr.Configuration;
+using Hugr.Utilities;
 using UnityEngine;
 
 namespace Hugr.Features.Sorting
@@ -45,7 +46,7 @@ namespace Hugr.Features.Sorting
             try
             {
                 ContainerClaims.Tick();
-                if (!_running && ModConfig.QuickStackKey.Value.IsDown() && TakesInput())
+                if (!_running && ModConfig.QuickStackKey.Value.IsDown() && InputGate.TakesInput())
                 {
                     Request(Player.m_localPlayer);
                 }
@@ -55,25 +56,6 @@ namespace Hugr.Features.Sorting
                 // Runs inside InventoryGui.Update: nothing may escape into the game loop.
                 Plugin.Report(ErrorCodes.StackUnexpected, "unexpected failure while stacking", exception);
             }
-        }
-
-        /// <summary>
-        /// The gate vanilla puts on the inventory key, so typing never triggers a stack. The
-        /// postfix also runs when <c>InventoryGui.Update</c> bails out early on a dead or
-        /// teleporting player, hence the checks on the player.
-        /// </summary>
-        private static bool TakesInput()
-        {
-            Player player = Player.m_localPlayer;
-            return player != null
-                && !player.IsDead()
-                && !player.IsTeleporting()
-                && (Chat.instance == null || !Chat.instance.HasFocus())
-                && (Hud.instance == null || !Hud.instance.m_buildUi.SearchFieldFocused)
-                && !Console.IsVisible()
-                && !TextInput.IsVisible()
-                && !Menu.IsVisible()
-                && !Minimap.IsOpen();
         }
 
         /// <summary>

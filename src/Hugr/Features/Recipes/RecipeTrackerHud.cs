@@ -42,6 +42,8 @@ namespace Hugr.Features.Recipes
         /// <summary>The pins and the shopping list setting the panel was built from.</summary>
         private string _built;
 
+        private float _rowHeight;
+
         private float _timer;
 
         /// <summary>Attaches the tracker to the HUD, once per HUD.</summary>
@@ -108,10 +110,10 @@ namespace Hugr.Features.Recipes
 
         private void Refresh()
         {
-            List<Recipe> recipes = PinnedRecipe.ResolveAll();
+            List<PinnedRecipe.Pin> pins = PinnedRecipe.ResolveAll();
             Player player = Player.m_localPlayer;
 
-            if (recipes.Count == 0 || player == null)
+            if (pins.Count == 0 || player == null)
             {
                 if (_panel != null)
                 {
@@ -122,10 +124,10 @@ namespace Hugr.Features.Recipes
             }
 
             // The count tells a pin the game did not know yet from one it now resolves.
-            string wanted = ModConfig.PinnedRecipe.Value + "|" + recipes.Count + "|" + ModConfig.ShoppingList.Value;
+            string wanted = ModConfig.PinnedRecipe.Value + "|" + pins.Count + "|" + ModConfig.ShoppingList.Value;
             if (wanted != _built || _panel == null)
             {
-                Build(recipes, wanted);
+                Build(pins, wanted);
             }
 
             if (_panel == null)
@@ -137,7 +139,7 @@ namespace Hugr.Features.Recipes
             UpdateAmounts(player.GetInventory());
         }
 
-        private void Build(List<Recipe> recipes, string wanted)
+        private void Build(List<PinnedRecipe.Pin> pins, string wanted)
         {
             Clear();
 
@@ -151,7 +153,7 @@ namespace Hugr.Features.Recipes
 
             GameObject template = requirements[0];
             RectTransform templateRect = template.transform as RectTransform;
-            float rowHeight = templateRect != null && templateRect.rect.height > 1f
+            _rowHeight = templateRect != null && templateRect.rect.height > 1f
                 ? templateRect.rect.height
                 : 44f;
 
@@ -164,9 +166,9 @@ namespace Hugr.Features.Recipes
             Anchor(_panel, new Vector2(-40f, -300f), new Vector2(Width, 0f));
 
             List<Need> total = new List<Need>();
-            float offset = 0f;
-            foreach (Recipe recipe in recipes)
+            foreach (PinnedRecipe.Pin pin in pins)
             {
+                Recipe recipe = pin.Recipe;
                 List<Need> needs = new List<Need>();
                 foreach (Piece.Requirement requirement in recipe.m_resources)
                 {
@@ -176,25 +178,37 @@ namespace Hugr.Features.Recipes
                         continue;
                     }
 
-                    Add(needs, requirement.m_resItem, requirement.GetAmount(1));
-                    Add(total, requirement.m_resItem, requirement.GetAmount(1));
+                    Add(needs, requirement.m_resItem, requirement.GetAmount(1) * pin.Quantity);
+                    Add(total, requirement.m_resItem, requirement.GetAmount(1) * pin.Quantity);
                 }
 
                 string title = Localization.instance.Localize(recipe.m_item.m_itemData.m_shared.m_name);
-                if (recipe.m_amount > 1)
+                if (recipe.m_amount * pin.Quantity > 1)
                 {
-                    title += " x" + recipe.m_amount;
+                    title += " x" + recipe.m_amount * pin.Quantity;
                 }
 
-                offset = AddBlock(template, rowHeight, offset, title, needs);
+                AddBlock(template, title, Station(recipe), needs);
             }
 
-            if (ModConfig.ShoppingList.Value && recipes.Count > 1)
+            if (ModConfig.ShoppingList.Value && pins.Count > 1)
             {
-                AddBlock(template, rowHeight, offset, "Shopping list", total);
+                AddBlock(template, "Shopping list", null, total);
             }
 
             _built = wanted;
+        }
+
+        /// <summary>The station the recipe needs, with its level when above the first; null when crafted by hand.</summary>
+        private static string Station(Recipe recipe)
+        {
+            if (recipe.m_craftingStation == null)
+            {
+                return null;
+            }
+
+            string station = Localization.instance.Localize(recipe.m_craftingStation.m_name);
+            return recipe.m_minStationLevel > 1 ? station + " " + recipe.m_minStationLevel : station;
         }
 
         /// <summary>Adds the item to the list, or its amount to the line the list already has for it.</summary>
@@ -213,15 +227,18 @@ namespace Hugr.Features.Recipes
         }
 
         /// <summary>
-        /// Lays a title and one row per need out from <paramref name="offset"/> down; returns where
-        /// the next block starts.
+        /// Creates a title, the station line when there is one, and one row per need. Nothing is
+        /// placed here: <see cref="UpdateAmounts"/> stacks what is shown on every refresh.
         /// </summary>
-        private float AddBlock(GameObject template, float rowHeight, float offset, string title, List<Need> needs)
+        private void AddBlock(GameObject template, string title, string station, List<Need> needs)
         {
-            TMP_Text caption = Clone<TMP_Text>(template, "res_name", _panel, ErrorCodes.RecipeTitleMissing);
-            Anchor(caption.rectTransform, new Vector2(0f, -offset), new Vector2(Width, rowHeight));
-            caption.alignment = TextAlignmentOptions.Right;
-            offset += rowHeight + RowGap;
+            TMP_Text caption = Caption(template);
+            TMP_Text stationCaption = null;
+            if (station != null)
+            {
+                stationCaption = Caption(template);
+                stationCaption.text = "<size=80%>" + station + "</size>";
+            }
 
             List<Row> rows = new List<Row>();
             foreach (Need need in needs)
@@ -233,7 +250,7 @@ namespace Hugr.Features.Recipes
                 RectTransform rect = row.transform as RectTransform;
                 if (rect != null)
                 {
-                    Anchor(rect, new Vector2(0f, -offset), new Vector2(Width, rowHeight));
+                    Anchor(rect, Vector2.zero, new Vector2(Width, _rowHeight));
                 }
 
                 Image icon = Find<Image>(row, "res_icon", ErrorCodes.RecipeIconMissing);
@@ -245,18 +262,36 @@ namespace Hugr.Features.Recipes
 
                 TMP_Text amount = Find<TMP_Text>(row, "res_amount", ErrorCodes.RecipeAmountMissing);
 
-                rows.Add(new Row(need, name, amount));
-                offset += rowHeight + RowGap;
+                rows.Add(new Row(need, row, name, amount));
             }
 
-            _blocks.Add(new Block(title, caption, rows));
-            return offset + BlockGap;
+            _blocks.Add(new Block(title, caption, stationCaption, rows));
         }
 
+        private TMP_Text Caption(GameObject template)
+        {
+            TMP_Text caption = Clone<TMP_Text>(template, "res_name", _panel, ErrorCodes.RecipeTitleMissing);
+            Anchor(caption.rectTransform, Vector2.zero, new Vector2(Width, _rowHeight));
+            caption.alignment = TextAlignmentOptions.Right;
+            return caption;
+        }
+
+        /// <summary>
+        /// Writes the counts and stacks the lines from the top of the panel: with only the missing
+        /// resources shown, a row comes and goes as the inventory changes.
+        /// </summary>
         private void UpdateAmounts(Inventory inventory)
         {
+            bool missingOnly = ModConfig.MissingOnly.Value;
+            float offset = 0f;
             foreach (Block block in _blocks)
             {
+                offset = Place(block.Caption.rectTransform, offset);
+                if (block.Station != null)
+                {
+                    offset = Place(block.Station.rectTransform, offset);
+                }
+
                 bool ready = true;
                 foreach (Row row in block.Rows)
                 {
@@ -267,10 +302,29 @@ namespace Hugr.Features.Recipes
                     row.Amount.color = enough ? Color.white : Missing;
                     row.Name.color = enough ? Color.white : Missing;
                     ready &= enough;
+
+                    bool shown = !enough || !missingOnly;
+                    row.Root.SetActive(shown);
+                    if (shown)
+                    {
+                        offset = Place(row.Root.transform as RectTransform, offset);
+                    }
                 }
 
                 block.Caption.text = ready ? block.Title + " <color=#8CDF7F>v</color>" : block.Title;
+                offset += BlockGap;
             }
+        }
+
+        /// <summary>Puts a line at <paramref name="offset"/> below the top; returns where the next one goes.</summary>
+        private float Place(RectTransform rect, float offset)
+        {
+            if (rect != null)
+            {
+                rect.anchoredPosition = new Vector2(0f, -offset);
+            }
+
+            return offset + _rowHeight + RowGap;
         }
 
         private void Clear()
@@ -332,10 +386,11 @@ namespace Hugr.Features.Recipes
 
         private readonly struct Block
         {
-            internal Block(string title, TMP_Text caption, List<Row> rows)
+            internal Block(string title, TMP_Text caption, TMP_Text station, List<Row> rows)
             {
                 Title = title;
                 Caption = caption;
+                Station = station;
                 Rows = rows;
             }
 
@@ -343,19 +398,25 @@ namespace Hugr.Features.Recipes
 
             internal TMP_Text Caption { get; }
 
+            /// <summary>The station line, null for a recipe crafted by hand and for the shopping list.</summary>
+            internal TMP_Text Station { get; }
+
             internal List<Row> Rows { get; }
         }
 
         private readonly struct Row
         {
-            internal Row(Need need, TMP_Text name, TMP_Text amount)
+            internal Row(Need need, GameObject root, TMP_Text name, TMP_Text amount)
             {
                 Need = need;
+                Root = root;
                 Name = name;
                 Amount = amount;
             }
 
             internal Need Need { get; }
+
+            internal GameObject Root { get; }
 
             internal TMP_Text Name { get; }
 

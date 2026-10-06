@@ -62,6 +62,12 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<int> MaxPinnedRecipes { get; private set; }
 
+        internal static ConfigEntry<KeyboardShortcut> PinMoreKey { get; private set; }
+
+        internal static ConfigEntry<KeyboardShortcut> PinLessKey { get; private set; }
+
+        internal static ConfigEntry<bool> MissingOnly { get; private set; }
+
         private static ConfigFile _config;
 
         /// <summary>
@@ -172,11 +178,23 @@ namespace Hugr.Configuration
 
             PinRecipeKey = config.Bind(
                 "Recipes", "PinRecipeKey", new KeyboardShortcut(KeyCode.P),
-                "Pins or unpins the recipe selected in the crafting panel.");
+                "Pins or unpins the recipe of the item under the pointer, or else the one selected in the crafting panel.");
+
+            PinMoreKey = config.Bind(
+                "Recipes", "PinMoreKey", new KeyboardShortcut(KeyCode.PageUp),
+                "Aims for one more craft of that recipe, pinning it first if needed.");
+
+            PinLessKey = config.Bind(
+                "Recipes", "PinLessKey", new KeyboardShortcut(KeyCode.PageDown),
+                "Aims for one craft less of that recipe, never below one.");
+
+            MissingOnly = config.Bind(
+                "Recipes", "MissingOnly", false,
+                "Show, under each pinned recipe, only the resources still missing.");
 
             PinnedRecipe = config.Bind(
                 "Recipes", "PinnedRecipe", string.Empty,
-                "Pinned recipes, by item prefab name, separated by commas. Pin from the crafting panel rather than here.");
+                "Pinned recipes, by item prefab name, separated by commas, with ':n' after a name to aim for n crafts. Pin in game rather than here.");
 
             MaxPinnedRecipes = config.Bind(
                 "Recipes", "MaxPinnedRecipes", 3,
