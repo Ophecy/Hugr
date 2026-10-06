@@ -22,6 +22,10 @@ namespace Hugr
         internal const string CraftFetchFailed = "HUGR-CRAFT-002";
         internal const string CraftPieceFetchFailed = "HUGR-CRAFT-003";
 
+        internal const string FilterStopped = "HUGR-FILTER-000";
+        internal const string FilterButtonTemplateMissing = "HUGR-FILTER-001";
+        internal const string FilterLabelMissing = "HUGR-FILTER-002";
+
         internal const string PatchUnexpected = "HUGR-PATCH-000";
         internal const string PatchTargetMissing = "HUGR-PATCH-001";
 

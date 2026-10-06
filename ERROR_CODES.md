@@ -111,6 +111,14 @@ code. A retired number is never reused.
 | `HUGR-SEARCH-001` | Error | The build menu has no search field to clone. | No search field. |
 | `HUGR-SEARCH-002` | Error | The cloned search field is not an input field. | No search field. |
 
+## FILTER — inventory category filters
+
+| Code | Level | Meaning | Effect |
+| --- | --- | --- | --- |
+| `HUGR-FILTER-000` | Error | Unexpected failure in the category filters. | The filter buttons are removed until the plugin reloads. |
+| `HUGR-FILTER-001` | Error | The container panel has no button to clone. | No filter buttons. |
+| `HUGR-FILTER-002` | Error | The cloned button has no label. | No filter buttons. |
+
 ## SERVER — remembered server passwords
 
 | Code | Level | Meaning | Effect |

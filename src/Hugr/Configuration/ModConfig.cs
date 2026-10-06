@@ -39,6 +39,8 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<bool> InventorySearch { get; private set; }
 
+        internal static ConfigEntry<bool> CategoryFilters { get; private set; }
+
         internal static ConfigEntry<bool> SmelterFill { get; private set; }
 
         internal static ConfigEntry<bool> QuickStack { get; private set; }
@@ -127,6 +129,10 @@ namespace Hugr.Configuration
             InventorySearch = config.Bind(
                 "Inventory", "InventorySearch", true,
                 "Add a search field that greys out the items not matching it, in the inventory and open containers.");
+
+            CategoryFilters = config.Bind(
+                "Inventory", "CategoryFilters", true,
+                "Add category buttons above the inventory that grey out the items of every other category, in the inventory and open containers.");
 
             SmelterFill = config.Bind(
                 "Stations", "SmelterFill", true,

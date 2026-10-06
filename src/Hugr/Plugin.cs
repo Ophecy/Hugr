@@ -79,6 +79,7 @@ namespace Hugr
             Bind(HudClock.Bind);
             Bind(HudCompass.Bind);
             Bind(InventorySearch.Bind);
+            Bind(CategoryFilters.Bind);
             Bind(SmelterFill.Bind);
 
             Logger.LogInfo("Hugr " + BuildInfo.DisplayVersion + " loaded.");
@@ -109,6 +110,7 @@ namespace Hugr
             HudClock.Remove();
             HudCompass.Remove();
             InventorySearch.Remove();
+            CategoryFilters.Remove();
         }
     }
 }

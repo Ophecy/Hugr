@@ -28,6 +28,12 @@ namespace Hugr.Features.Search
 
         private static bool _stopped;
 
+        /// <summary>Width the field takes off the row above the player panel, none without a field.</summary>
+        internal static float ReservedWidth
+        {
+            get { return _field == null ? 0f : ((RectTransform)_field.transform).rect.width + Gap; }
+        }
+
         internal static void Bind(Harmony harmony)
         {
             ModConfig.InventorySearch.SettingChanged += (sender, args) =>
@@ -79,7 +85,13 @@ namespace Hugr.Features.Search
                     Build(gui);
                 }
 
-                Dim(__instance, Normalize(_field.text));
+                string term = Normalize(_field.text);
+                if (term.Length > 0)
+                {
+                    Dim(
+                        __instance,
+                        item => Normalize(Localization.instance.Localize(item.m_shared.m_name)).Contains(term));
+                }
             }
             catch (Exception exception)
             {
@@ -113,9 +125,10 @@ namespace Hugr.Features.Search
             }
         }
 
-        private static void Dim(InventoryGrid grid, string term)
+        /// <summary>Greys out the items of the grid that <paramref name="matches"/> turns down.</summary>
+        internal static void Dim(InventoryGrid grid, Predicate<ItemDrop.ItemData> matches)
         {
-            if (term.Length == 0 || grid.m_inventory == null)
+            if (grid.m_inventory == null)
             {
                 return;
             }
@@ -123,8 +136,7 @@ namespace Hugr.Features.Search
             int width = grid.m_inventory.GetWidth();
             foreach (ItemDrop.ItemData item in grid.m_inventory.GetAllItems())
             {
-                string name = Normalize(Localization.instance.Localize(item.m_shared.m_name));
-                if (!name.Contains(term))
+                if (!matches(item))
                 {
                     InventoryElement element = grid.GetElement(item.m_gridPos.x, item.m_gridPos.y, width);
                     if (element != null)
