@@ -199,7 +199,7 @@ namespace Hugr.Features.Recipes
             _built = wanted;
         }
 
-        /// <summary>The station the recipe needs, with its level when above the first; null when crafted by hand.</summary>
+        /// <summary>The station the recipe needs, with its level above the first; null when crafted by hand.</summary>
         private static string Station(Recipe recipe)
         {
             if (recipe.m_craftingStation == null)

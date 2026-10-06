@@ -35,13 +35,14 @@ namespace Hugr.Features.Sorting
         /// <paramref name="keptRows"/> rows stay where they are — that is the hotbar, and a sort
         /// button that shuffles it is a sort button nobody presses twice. Their stacks are still
         /// topped up from the rest. Rows from <paramref name="rows"/> down are left alone
-        /// altogether: neither merged nor moved.
+        /// altogether: neither merged nor moved. A slot <paramref name="locked"/> names keeps
+        /// what it holds — its stack is topped up, never poured elsewhere — and receives nothing.
         /// </summary>
-        internal static int Sort(Inventory inventory, int keptRows, int rows)
+        internal static int Sort(Inventory inventory, int keptRows, int rows, Predicate<Vector2i> locked)
         {
             List<ItemDrop.ItemData> items = inventory.GetAllItems();
-            int freed = MergeStacks(items, rows);
-            Arrange(inventory, items, keptRows, rows);
+            int freed = MergeStacks(items, rows, locked);
+            Arrange(inventory, items, keptRows, rows, locked);
             _changed.Invoke(inventory, new object[] { false, false });
             return freed;
         }
@@ -50,7 +51,7 @@ namespace Hugr.Features.Sorting
         /// Pours every partial stack into the ones before it, walking the grid from the top left,
         /// so the hotbar fills first.
         /// </summary>
-        private static int MergeStacks(List<ItemDrop.ItemData> items, int rows)
+        private static int MergeStacks(List<ItemDrop.ItemData> items, int rows, Predicate<Vector2i> locked)
         {
             List<ItemDrop.ItemData> ordered = items.FindAll(item => item.m_gridPos.y < rows);
             ordered.Sort(ByGridPosition);
@@ -74,7 +75,7 @@ namespace Hugr.Features.Sorting
                     }
 
                     ItemDrop.ItemData from = ordered[source];
-                    if (!Stackable(from) || !SameKind(into, from))
+                    if (!Stackable(from) || !SameKind(into, from) || locked(from.m_gridPos))
                     {
                         continue;
                     }
@@ -95,12 +96,13 @@ namespace Hugr.Features.Sorting
             return freed;
         }
 
-        private static void Arrange(Inventory inventory, List<ItemDrop.ItemData> items, int keptRows, int rows)
+        private static void Arrange(
+            Inventory inventory, List<ItemDrop.ItemData> items, int keptRows, int rows, Predicate<Vector2i> locked)
         {
             List<ItemDrop.ItemData> movable = new List<ItemDrop.ItemData>();
             foreach (ItemDrop.ItemData item in items)
             {
-                if (item.m_gridPos.y >= keptRows && item.m_gridPos.y < rows)
+                if (item.m_gridPos.y >= keptRows && item.m_gridPos.y < rows && !locked(item.m_gridPos))
                 {
                     movable.Add(item);
                 }
@@ -116,7 +118,11 @@ namespace Hugr.Features.Sorting
             {
                 for (int x = 0; x < width && next < movable.Count; x++)
                 {
-                    movable[next++].m_gridPos = new Vector2i(x, y);
+                    Vector2i slot = new Vector2i(x, y);
+                    if (!locked(slot))
+                    {
+                        movable[next++].m_gridPos = slot;
+                    }
                 }
             }
         }

@@ -89,6 +89,11 @@ namespace Hugr.UI
             AddRow(row, tab, ModConfig.SortButton, "Sort button");
             AddRow(row, tab, ModConfig.SortBaseSlotsOnly, "Sort the base inventory slots only");
             AddRow(row, tab, ModConfig.QuickStack, "Quick stack to nearby chests");
+            AddRow(row, tab, ModConfig.StoreAll, "Store all to nearby chests");
+            AddRow(row, tab, ModConfig.Restock, "Restock from nearby chests");
+            AddRow(row, tab, ModConfig.Favorites, "Locked inventory slots");
+            AddRow(row, tab, ModConfig.Trash, "Trash key");
+            AddRow(row, tab, ModConfig.TrashConfirm, "Trash key: ask twice");
             AddRow(row, tab, ModConfig.CraftFromContainers, "Craft and build from nearby chests");
             AddRow(row, tab, ModConfig.SmelterFill, "Fill smelters with Shift+E");
             AddRow(row, tab, ModConfig.ServerPasswords, "Remember server passwords");

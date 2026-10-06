@@ -51,6 +51,29 @@ namespace Hugr.Configuration
 
         internal static ConfigEntry<float> QuickStackRange { get; private set; }
 
+        internal static ConfigEntry<bool> StoreAll { get; private set; }
+
+        internal static ConfigEntry<KeyboardShortcut> StoreAllKey { get; private set; }
+
+        internal static ConfigEntry<float> StoreAllRange { get; private set; }
+
+        internal static ConfigEntry<bool> Restock { get; private set; }
+
+        internal static ConfigEntry<KeyboardShortcut> RestockKey { get; private set; }
+
+        internal static ConfigEntry<bool> Favorites { get; private set; }
+
+        internal static ConfigEntry<KeyboardShortcut> FavoriteKey { get; private set; }
+
+        /// <summary>Locked slots of the player inventory, as <c>x:y</c> pairs, written by the lock key.</summary>
+        internal static ConfigEntry<string> FavoriteSlots { get; private set; }
+
+        internal static ConfigEntry<bool> Trash { get; private set; }
+
+        internal static ConfigEntry<KeyboardShortcut> TrashKey { get; private set; }
+
+        internal static ConfigEntry<bool> TrashConfirm { get; private set; }
+
         internal static ConfigEntry<bool> CraftFromContainers { get; private set; }
 
         internal static ConfigEntry<float> CraftFromContainersRange { get; private set; }
@@ -165,6 +188,52 @@ namespace Hugr.Configuration
                 new ConfigDescription(
                     "Distance, in metres, within which chests take part in a quick stack.",
                     new AcceptableValueRange<float>(1f, 30f)));
+
+            StoreAll = config.Bind(
+                "Inventory", "StoreAll", true,
+                "On a key press, empty the inventory into the chests in range, except equipped items, the hotbar and locked slots.");
+
+            StoreAllKey = config.Bind(
+                "Inventory", "StoreAllKey", new KeyboardShortcut(KeyCode.G, KeyCode.LeftShift),
+                "Stores the carried items into the nearby chests, whether they already hold them or not.");
+
+            StoreAllRange = config.Bind(
+                "Inventory", "StoreAllRange", 10f,
+                new ConfigDescription(
+                    "Distance, in metres, within which chests take part in a store all.",
+                    new AcceptableValueRange<float>(1f, 30f)));
+
+            Restock = config.Bind(
+                "Inventory", "Restock", true,
+                "On a key press, top up the stacks of the hotbar and of the locked slots from the nearby chests. Needs CraftFromContainers.");
+
+            RestockKey = config.Bind(
+                "Inventory", "RestockKey", new KeyboardShortcut(KeyCode.T, KeyCode.LeftShift),
+                "Tops up the stacks of the hotbar and of the locked slots from the nearby chests.");
+
+            Favorites = config.Bind(
+                "Inventory", "Favorites", true,
+                "Lock inventory slots with a key: the sort, store all and the trash key leave them alone.");
+
+            FavoriteKey = config.Bind(
+                "Inventory", "FavoriteKey", new KeyboardShortcut(KeyCode.K),
+                "Locks or unlocks the inventory slot under the pointer.");
+
+            FavoriteSlots = config.Bind(
+                "Inventory", "FavoriteSlots", string.Empty,
+                "Locked slots, as column:row pairs separated by commas. Lock in game rather than here.");
+
+            Trash = config.Bind(
+                "Inventory", "Trash", true,
+                "Destroy the stack under the pointer with a key, instead of dropping it.");
+
+            TrashKey = config.Bind(
+                "Inventory", "TrashKey", new KeyboardShortcut(KeyCode.Delete),
+                "Destroys the stack of the player inventory under the pointer.");
+
+            TrashConfirm = config.Bind(
+                "Inventory", "TrashConfirm", true,
+                "Ask for a second press of the trash key before destroying a stack.");
 
             CraftFromContainers = config.Bind(
                 "Crafting", "CraftFromContainers", true,

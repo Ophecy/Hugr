@@ -96,6 +96,18 @@ code. A retired number is never reused.
 | `HUGR-CRAFT-002` | Error | The resources of a craft could not be fetched. | The craft runs on the inventory alone. |
 | `HUGR-CRAFT-003` | Error | The resources of a piece could not be fetched. | The placement runs on the inventory alone. |
 
+## STORE, RESTOCK, FAV and TRASH — inventory keys
+
+| Code | Level | Meaning | Effect |
+| --- | --- | --- | --- |
+| `HUGR-STORE-000` | Error | Unexpected failure while storing the inventory. | That store all is abandoned. |
+| `HUGR-RESTOCK-000` | Error | Unexpected failure while starting a restock. | That restock is abandoned. |
+| `HUGR-RESTOCK-001` | Error | The restock was interrupted between two items. | What was already fetched stays in the inventory. |
+| `HUGR-FAV-000` | Error | Unexpected failure while locking or unlocking a slot. | The slot keeps its state. |
+| `HUGR-FAV-001` | Error | The locked slots could not be marked. | Locks still apply, without their star, until the inventory grid is rebuilt. |
+| `HUGR-FAV-002` | Error | An inventory slot no longer carries its corner caption. | Same as `HUGR-FAV-001`. |
+| `HUGR-TRASH-000` | Error | Unexpected failure while destroying an item. | The item is kept. |
+
 ## SMELT — fill a smelter with Shift+E
 
 | Code | Level | Meaning | Effect |

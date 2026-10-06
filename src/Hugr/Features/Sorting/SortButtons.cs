@@ -4,6 +4,7 @@
 using System;
 using HarmonyLib;
 using Hugr.Configuration;
+using Hugr.Features.Slots;
 using Hugr.UI;
 using TMPro;
 using UnityEngine;
@@ -178,7 +179,7 @@ namespace Hugr.Features.Sorting
             // Row zero is the hotbar: its stacks are topped up, its slots never move.
             Inventory inventory = player.GetInventory();
             int rows = ModConfig.SortBaseSlotsOnly.Value ? BaseRows : inventory.GetHeight();
-            Report(player, InventorySorter.Sort(inventory, 1, rows));
+            Report(player, InventorySorter.Sort(inventory, 1, rows, FavoriteSlots.IsFavorite));
         }
 
         private static void SortContainer(InventoryGui gui)
@@ -190,7 +191,7 @@ namespace Hugr.Features.Sorting
             }
 
             Inventory inventory = container.GetInventory();
-            Report(Player.m_localPlayer, InventorySorter.Sort(inventory, 0, inventory.GetHeight()));
+            Report(Player.m_localPlayer, InventorySorter.Sort(inventory, 0, inventory.GetHeight(), slot => false));
         }
 
         private static void Report(Player player, int freed)

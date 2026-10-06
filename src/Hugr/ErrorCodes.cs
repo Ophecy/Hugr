@@ -22,6 +22,10 @@ namespace Hugr
         internal const string CraftFetchFailed = "HUGR-CRAFT-002";
         internal const string CraftPieceFetchFailed = "HUGR-CRAFT-003";
 
+        internal const string FavoriteUnexpected = "HUGR-FAV-000";
+        internal const string FavoriteMarkFailed = "HUGR-FAV-001";
+        internal const string FavoriteCaptionMissing = "HUGR-FAV-002";
+
         internal const string FilterStopped = "HUGR-FILTER-000";
         internal const string FilterButtonTemplateMissing = "HUGR-FILTER-001";
         internal const string FilterLabelMissing = "HUGR-FILTER-002";
@@ -42,6 +46,9 @@ namespace Hugr
         internal const string RepairRoutineMissing = "HUGR-REPAIR-001";
         internal const string RepairNotConverging = "HUGR-REPAIR-002";
         internal const string AutoRepairUnexpected = "HUGR-REPAIR-003";
+
+        internal const string RestockUnexpected = "HUGR-RESTOCK-000";
+        internal const string RestockFetchFailed = "HUGR-RESTOCK-001";
 
         internal const string SearchStopped = "HUGR-SEARCH-000";
         internal const string SearchTemplateMissing = "HUGR-SEARCH-001";
@@ -64,6 +71,10 @@ namespace Hugr
         internal const string SortBadgeMissing = "HUGR-SORT-006";
 
         internal const string StackUnexpected = "HUGR-STACK-000";
+
+        internal const string StoreUnexpected = "HUGR-STORE-000";
+
+        internal const string TrashUnexpected = "HUGR-TRASH-000";
 
         internal const string UiUnexpected = "HUGR-UI-000";
         internal const string UiTabHandlerMissing = "HUGR-UI-001";

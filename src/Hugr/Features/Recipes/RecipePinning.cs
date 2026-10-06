@@ -67,7 +67,7 @@ namespace Hugr.Features.Recipes
             }
 
             // An item under the pointer comes first: it is what the player is looking at.
-            ItemDrop.ItemData hovered = InventoryHover.Item(gui, out bool _);
+            ItemDrop.ItemData hovered = InventoryHover.Item(gui, out _);
             Recipe recipe = hovered != null
                 ? ObjectDB.instance.GetRecipe(hovered)
                 : _recipeOfPair.GetValue(_selectedRecipe.GetValue(gui), null) as Recipe;

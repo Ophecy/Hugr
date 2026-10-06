@@ -13,6 +13,7 @@ using Hugr.Features.Recipes;
 using Hugr.Features.Repair;
 using Hugr.Features.Search;
 using Hugr.Features.Servers;
+using Hugr.Features.Slots;
 using Hugr.Features.Smelting;
 using Hugr.Features.Sorting;
 using Hugr.UI;
@@ -72,8 +73,13 @@ namespace Hugr
             Bind(RepairAll.Bind);
             Bind(RecipePinning.Bind);
             Bind(SortButtons.Bind);
-            Bind(harmony => ContainerClaims.Bind(harmony, ModConfig.QuickStack, ModConfig.CraftFromContainers));
+            Bind(harmony => ContainerClaims.Bind(
+                harmony, ModConfig.QuickStack, ModConfig.CraftFromContainers, ModConfig.StoreAll));
             Bind(QuickStack.Bind);
+            Bind(StoreAll.Bind);
+            Bind(Restock.Bind);
+            Bind(FavoriteSlots.Bind);
+            Bind(Trash.Bind);
             Bind(ContainerResources.Bind);
             Bind(ServerPasswords.Bind);
             Bind(HudClock.Bind);
@@ -112,6 +118,7 @@ namespace Hugr
             HudCompass.Remove();
             InventorySearch.Remove();
             CategoryFilters.Remove();
+            FavoriteSlots.Remove();
         }
     }
 }
