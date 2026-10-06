@@ -9,8 +9,8 @@ gameplay content. See `Hugr_Specifications_Fonctionnelles.md` and
 
 ## Status
 
-V2 — recipe tracker. Repair is done, and a pinned recipe now follows you on screen with live
-resource counts. Multiple pins and the shopping list come with V3.
+V2 — in progress. Repair is done, and a pinned recipe now follows you on screen with live
+resource counts. Multiple pins and the shopping list are still to come.
 
 ## Features
 
@@ -19,7 +19,7 @@ resource counts. Multiple pins and the shopping list come with V3.
 | Automatic repair | Repairs every item the station accepts as soon as the crafting panel opens. |
 | Repair everything at once | One press of the vanilla repair button repairs the whole pile. |
 | Pinned recipes | Select a recipe in the crafting panel and press **P**: it stays on screen with what you have and what you still need. Press **P** again on it to unpin. |
-| Shopping list | Placeholder, lands with V3. |
+| Shopping list | Placeholder, not implemented yet. |
 | Sort button | A **Sort** button on the inventory and on any open container: partial stacks are merged, then items are grouped by kind and name. The hotbar row keeps its slots — its stacks are still topped up. |
 | Quick stack to nearby chests | Press **G**: every chest within 10 m takes from your inventory the items it already holds, through the chest's own vanilla "stack all". Equipped items stay; chests in use, someone else's private chests, chests behind someone else's ward and dungeon chests are skipped. Key and range are `QuickStackKey` and `QuickStackRange` in the config file. |
 | Craft and build from nearby chests | Chests, carts and ships within 15 m of you, or of a crafting station whose range covers you, count in the crafting panel and the build menu. When you craft or place a piece, only what your inventory lacks is moved into it from those chests, then the game crafts or builds as usual. If a chest belongs to another player's client, the craft waits for it and the placement is replayed once the resources arrive. Range is `CraftFromContainersRange` in the config file. |
